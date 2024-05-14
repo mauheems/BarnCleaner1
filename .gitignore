@@ -1,5 +1,1 @@
-__pycache__
-.vscode/
-build/
-devel/
-.gitlab-ci-local/
+node_modules/

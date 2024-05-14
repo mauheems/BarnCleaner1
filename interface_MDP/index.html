@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Control</title>
+    <link rel="stylesheet" type="text/css" href="style.css"> <!-- Link to your CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Three columns */
+            grid-gap: 20px; /* Gap between columns */
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 20px;
+            grid-column: 1 / span 3; /* Span across all three columns */
+        }
+
+        .button-container {
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            width: 100px; /* Adjust the width as needed */
+            height: 100px; /* Adjust the height as needed */
+            padding: 15px;
+            font-size: 24px; /* Adjust the font size for arrow symbols */
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            borde5r: none;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .button-container-horizontal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button-container-vertical {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        /* CSS styles for the notification banner */
+	#notification-banner {
+	    display: none; /* Initially hide the banner */
+	    position: fixed; /* Fixed position at the top of the screen */
+	    top: 0;
+	    left: 0;
+	    width: 100%; /* Full width */
+	    background-color: #ff0000; /* Red background color */
+	    color: #ffffff; /* White text color */
+	    padding: 10px; /* Add padding for better readability */
+	    text-align: center; /* Center-align the text */
+	    z-index: 1000; /* Ensure the banner appears above other content */
+	}
+        
+    </style>
+</head>
+<body>
+    <h1>Robot Control</h1>
+    <div id="notification-banner"></div> <!-- Banner element for notifications -->
+    
+    <!-- Status column -->
+    <div id="status-column" class="button-container">
+        <h2>Status</h2>
+        <ul id="status-list"></ul> <!-- List to display status updates -->
+        
+    </div>
+    
+    
+    <!-- Control buttons column -->
+    <div id="control-column" class="button-container">
+        <h2>Control</h2>
+        <div class="button-container button-container-vertical">
+            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
+            <div class="button-container-horizontal">
+                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
+                <button id="manualBtn" class="button">Manual Control</button>
+                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
+            </div>
+            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
+        </div>
+    </div>
+    
+    <!-- Parameters column -->
+    <div id="parameters-column" class="button-container">
+        <h2>Parameters</h2>
+        <div id="battery">Battery: </div>
+        <div id="manure">Manure Storage: </div>
+        <div id="cleaning">Last Cleaning Time: </div>
+        <div id="time">Time: </div>
+    </div>
+    
+    <!-- Schedule Cleaning Session form -->
+    <div id="scheduleForm">
+        <h2>Schedule Cleaning Session</h2>
+        <form id="scheduleForm">
+            <label for="scheduleDate">Date:</label>
+            <input type="date" id="scheduleDate" name="scheduleDate" required>
+            <br>
+            <label for="scheduleTime">Time:</label>
+            <input type="time" id="scheduleTime" name="scheduleTime" required>
+            <br>
+            <button type="submit">Schedule Cleaning</button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/roslib/1.1.0/roslib.min.js"></script>
+    <script src="script.js" defer></script>
+</body>
+</html>
+
