@@ -77,6 +77,9 @@
     </style>
 </head>
 <body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/roslib/1.1.0/roslib.min.js"></script>
+    <script src="script.js" defer></script>
     <h1>Robot Control</h1>
     <div id="notification-banner"></div> <!-- Banner element for notifications -->
     
@@ -124,9 +127,17 @@
             <button type="submit">Schedule Cleaning</button>
         </form>
     </div>
+    
+    <!-- List of Scheduled Cleanings -->
+    <div id="scheduled-cleanings">
+	 <h2>Scheduled Cleanings</h2>
+	 <ul id="scheduled-cleanings-list">
+		<!-- Scheduled cleanings will be added dynamically here -->
+	 </ul>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/roslib/1.1.0/roslib.min.js"></script>
-    <script src="script.js" defer></script>
+
+    
 </body>
 </html>
 

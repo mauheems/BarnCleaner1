@@ -4,6 +4,7 @@ var ws = new WebSocket('ws://localhost:8080');
 // Log a message when the WebSocket connection is opened
 ws.onopen = function() {
     console.log('WebSocket connected');
+    
 };
 
 
@@ -162,7 +163,6 @@ function handleFormSubmission(event) {
 }
 // Add an event listener to the form for submission
 document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmission);
-
 
 
 //////////////////////////////SCHEDULE CLEANING////////////////////////////////////////

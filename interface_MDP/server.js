@@ -51,7 +51,7 @@ const wss = new WebSocket.Server({ server });
 // WebSocket connection for handling button presses and scheduling commands
 wss.on('connection', ws => {
     console.log('WebSocket connected');
-
+    
     // Handle WebSocket messages
     ws.on('message', message => {
         const messageString = message.toString();
@@ -73,7 +73,7 @@ wss.on('connection', ws => {
             controlRobot(parsedMessage.button);
         } else if (parsedMessage.command === 'schedule') {
             // Call function to handle scheduling
-            handleSchedule(parsedMessage.data);
+            addScheduledCleaning(parsedMessage.data.date, parsedMessage.data.time);
         } else {
             console.error('Unknown command:', parsedMessage.command);
         }
@@ -178,11 +178,52 @@ async function controlRobot(command) {
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 const { scheduleJob } = require('node-schedule');
 
-// Function to handle scheduling cleaning sessions
-function handleSchedule(schedule) {
-    console.log('Scheduling cleaning session for:', schedule.date, schedule.time);
-    // Implement your scheduling logic here
+function startCleaning() {
+    console.log('Starting cleaning process...');
+    // Add your cleaning logic here
 }
+
+// Define a list to store scheduled dates and times
+let scheduledCleanings = [];
+
+// Function to add a scheduled cleaning session
+function addScheduledCleaning(date, time) {
+    scheduledCleanings.push({ date, time });
+}
+
+function checkScheduledCleanings() {
+    const currentTime = new Date();
+    const currentDateString = currentTime.toISOString().split('T')[0]; // Get current date in format 'YYYY-MM-DD'
+    const currentTimeString = currentTime.toTimeString().split(' ')[0]; // Get current time in format 'HH:MM:SS'
+
+    console.log('Checking scheduled cleanings...');
+    console.log('Current Date:', currentDateString);
+    console.log('Current Time:', currentTimeString);
+
+    scheduledCleanings.forEach(scheduledCleaning => {
+        console.log('Scheduled Date:', scheduledCleaning.date);
+        console.log('Scheduled Time:', scheduledCleaning.time);
+
+        // Extract hours and minutes from current time and scheduled time
+        const [currentHours, currentMinutes] = currentTimeString.split(':');
+        const [scheduledHours, scheduledMinutes] = scheduledCleaning.time.split(':');
+
+        // Check if hours and minutes match
+        if (
+            scheduledCleaning.date === currentDateString &&
+            currentHours === scheduledHours &&
+            currentMinutes === scheduledMinutes
+        ) {
+            console.log('Scheduled cleaning matched. Starting cleaning...');
+            // Match found, trigger cleaning
+            startCleaning();
+        }
+    });
+}
+
+// Schedule periodic checking of scheduled cleanings
+setInterval(checkScheduledCleanings, 10000); // Check every 10 seconds
+
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 
 
