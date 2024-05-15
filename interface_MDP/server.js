@@ -178,19 +178,26 @@ async function controlRobot(command) {
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 const { scheduleJob } = require('node-schedule');
 
-function startCleaning() {
-    console.log('Starting cleaning process...');
-    // Add your cleaning logic here
-}
-
 // Define a list to store scheduled dates and times
 let scheduledCleanings = [];
+
+// Function to start cleaning
+function startCleaning(scheduledCleaningIndex) {
+    console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
+    // Your cleaning logic goes here...
+
+    // Remove the scheduled cleaning from the list
+    scheduledCleanings.splice(scheduledCleaningIndex, 1);
+
+}
+
 
 // Function to add a scheduled cleaning session
 function addScheduledCleaning(date, time) {
     scheduledCleanings.push({ date, time });
 }
 
+// Function to check scheduled cleanings
 function checkScheduledCleanings() {
     const currentTime = new Date();
     const currentDateString = currentTime.toISOString().split('T')[0]; // Get current date in format 'YYYY-MM-DD'
@@ -200,7 +207,7 @@ function checkScheduledCleanings() {
     console.log('Current Date:', currentDateString);
     console.log('Current Time:', currentTimeString);
 
-    scheduledCleanings.forEach(scheduledCleaning => {
+    scheduledCleanings.forEach((scheduledCleaning, index) => {
         console.log('Scheduled Date:', scheduledCleaning.date);
         console.log('Scheduled Time:', scheduledCleaning.time);
 
@@ -216,7 +223,7 @@ function checkScheduledCleanings() {
         ) {
             console.log('Scheduled cleaning matched. Starting cleaning...');
             // Match found, trigger cleaning
-            startCleaning();
+            startCleaning(index); // Pass the index of the matched cleaning
         }
     });
 }

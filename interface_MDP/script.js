@@ -109,7 +109,7 @@ showNotification('Robot is stuck!');
 
 
 ///////////////////////////////////STATUS//////////////////////////////////
-// Function to add a status update to the log
+
 // Function to add a status update to the log with timestamp
 function addStatusUpdate(status) {
     var statusList = document.getElementById('status-list');
@@ -154,13 +154,19 @@ function handleFormSubmission(event) {
         date: scheduleDate,
         time: scheduleTime
     };
-
+	
+    
     // Send the schedule data to the server via WebSocket
     ws.send(JSON.stringify({ command: 'schedule', data: schedule }));
 
+    
     // Reset the form
     event.target.reset();
 }
+
+
+
+
 // Add an event listener to the form for submission
 document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmission);
 
