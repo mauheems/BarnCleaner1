@@ -1,0 +1,340 @@
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_color_frame"
+    child_frame_id: "camera_color_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_depth_frame"
+    child_frame_id: "camera_depth_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_ir_frame"
+    child_frame_id: "camera_ir_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_link"
+    child_frame_id: "camera_depth_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_link"
+    child_frame_id: "camera_ir_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs:  42534770
+      frame_id: "camera_link"
+    child_frame_id: "camera_color_frame"
+    transform:
+      translation:
+        x: 0.001112083223383956
+        y: -0.025263082782372777
+        z: 0.00011685867212889429
+      rotation:
+        x: -0.00036957073707978013
+        y: 0.0008493881794769256
+        z: -0.001761227241118803
+        w: 0.9999980200159377
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 157192723
+      frame_id: "map"
+    child_frame_id: "camera_ir_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: -0.706825181105366
+        y: 0.0
+        z: 0.0
+        w: 0.7073882691671998
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 173603005
+      frame_id: "map"
+    child_frame_id: "laser"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 179459653
+      frame_id: "map"
+    child_frame_id: "camera_color_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: -0.706825181105366
+        y: 0.0
+        z: 0.0
+        w: 0.7073882691671998
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 189227830
+      frame_id: "map"
+    child_frame_id: "camera_depth_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: -0.706825181105366
+        y: 0.0
+        z: 0.0
+        w: 0.7073882691671998
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 140906334
+      frame_id: "odom"
+    child_frame_id: "base_link"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+---
+^Ctransforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_color_frame"
+    child_frame_id: "camera_color_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_depth_frame"
+    child_frame_id: "camera_depth_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_ir_frame"
+    child_frame_id: "camera_ir_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: -0.5
+        y: 0.4999999999999999
+        z: -0.5
+        w: 0.5000000000000001
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_link"
+    child_frame_id: "camera_depth_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_link"
+    child_frame_id: "camera_ir_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: -0.0
+        z: -0.0
+      rotation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 142697161
+      frame_id: "camera_link"
+    child_frame_id: "camera_color_frame"
+    transform:
+      translation:
+        x: 0.001112083223383956
+        y: -0.025263082782372777
+        z: 0.00011685867212889429
+      rotation:
+        x: -0.00036957073707978013
+        y: 0.0008493881794769256
+        z: -0.001761227241118803
+        w: 0.9999980200159377
+---
+transforms:
+  -
+    header:
+      seq: 0
+      stamp:
+        secs: 1715875383
+        nsecs: 257447282
+      frame_id: "map"
+    child_frame_id: "camera_ir_optical_frame"
+    transform:
+      translation:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      rotation:
+        x: -0.706825181105366
+        y: 0.0
+        z: 0.0
+        w: 0.7073882691671998
+---
