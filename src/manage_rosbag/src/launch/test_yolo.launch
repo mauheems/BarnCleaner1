@@ -1,9 +1,0 @@
-<launch>
-  <node pkg="rosbag" type="record" name="yolo_rosbag" required="true" args="
-    /camera/color/image_raw
-    /detection_yolo/image
-    -o yolo_
-    --split
-    --size=1024
-    --lz4"/>
-</launch>
