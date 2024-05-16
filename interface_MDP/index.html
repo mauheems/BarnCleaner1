@@ -13,14 +13,12 @@
             margin: 0;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* Three columns */
             grid-gap: 20px; /* Gap between columns */
         }
 
         h1 {
             color: #333;
             margin-top: 20px;
-            grid-column: 1 / span 3; /* Span across all three columns */
         }
 
         .button-container {
@@ -73,7 +71,67 @@
 	    text-align: center; /* Center-align the text */
 	    z-index: 1000; /* Ensure the banner appears above other content */
 	}
-        
+	
+        /* Tabs container */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #ccc;
+            border-radius: 5px 5px 0 0;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Content container */
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Robot parameter boxes */
+        .robot-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Three columns */
+            grid-gap: 20px; /* Gap between columns */
+        }
+
+        .robot-box {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .robot-controls {
+            margin-top: 10px;
+        }
+
+        /* Form styling */
+        form {
+            margin-top: 20px;
+        }
+
+        form label {
+            margin-right: 10px;
+        }
+
+        form input {
+            margin-bottom: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -83,18 +141,61 @@
     <h1>Robot Control</h1>
     <div id="notification-banner"></div> <!-- Banner element for notifications -->
     
-    <!-- Status column -->
-    <div id="status-column" class="button-container">
-        <h2>Status</h2>
-        <ul id="status-list"></ul> <!-- List to display status updates -->
-        
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" data-tab="cleaning">Cleaning Session</div>
+        <div class="tab" data-tab="status">Status</div>
+        <div class="tab" data-tab="mapping">Mapping</div>
+        <!-- Add more tabs here if needed -->
     </div>
     
+        <!-- Content -->
+    <div id="cleaning" class="content active">
+        <!-- Schedule Cleaning Session form -->
+        <div id="scheduleForm">
+            <h2>Schedule Cleaning Session</h2>
+            <form id="scheduleForm">
+                <label for="scheduleDate">Date:</label>
+                <input type="date" id="scheduleDate" name="scheduleDate" required>
+                <br>
+                <label for="scheduleTime">Time:</label>
+                <input type="time" id="scheduleTime" name="scheduleTime" required>
+                <br>
+                <button type="submit">Schedule Cleaning</button>
+            </form>
+        </div>
+
+        <!-- List of Scheduled Cleanings -->
+        <div id="scheduled-cleanings">
+            <h2>Scheduled Cleanings</h2>
+            <ul id="scheduled-cleanings-list"></ul>
+        </div>
+    </div>
+
+    <div id="status" class="content">
+        <!-- Status column -->
+        <div id="status-column" class="button-container">
+            <h2>Status</h2>
+            <ul id="status-list"></ul> <!-- List to display status updates -->
+        </div>
+    </div>
+
+    <div id="mapping" class="content">
+        <!-- Mapping content goes here -->
+        <h2>Mapping</h2>
+        <!-- Add mapping elements here -->
+    </div>
     
-    <!-- Control buttons column -->
-    <div id="control-column" class="button-container">
-        <h2>Control</h2>
-        <div class="button-container button-container-vertical">
+   
+    <!-- Robot parameter boxes -->
+    <div class="robot-container">
+        <!-- Robot 1 -->
+        <div class="robot-box">
+            <h2>Robot 1</h2>
+            <div id="battery1">Battery: </div>
+            <div id="manure1">Manure Storage: </div>
+            <!-- Manual control buttons for Robot 1 -->
+            <div class="button-container button-container-vertical">
             <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
             <div class="button-container-horizontal">
                 <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
@@ -102,42 +203,65 @@
                 <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
             </div>
             <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
+            </div>
+        </div>
+
+        <!-- Robot 2 -->
+        <div class="robot-box">
+            <h2>Robot 2</h2>
+            <div id="battery2">Battery: </div>
+            <div id="manure2">Manure Storage: </div>
+            <!-- Manual control buttons for Robot 2 -->
+            <div class="button-container button-container-vertical">
+            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
+            <div class="button-container-horizontal">
+                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
+                <button id="manualBtn" class="button">Manual Control</button>
+                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
+            </div>
+            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
+            </div>
+        </div>
+
+        <!-- Robot 3 -->
+        <div class="robot-box">
+            <h2>Robot 3</h2>
+            <div id="battery3">Battery: </div>
+            <div id="manure3">Manure Storage: </div>
+            <!-- Manual control buttons for Robot 3 -->
+            <div class="button-container button-container-vertical">
+            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
+            <div class="button-container-horizontal">
+                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
+                <button id="manualBtn" class="button">Manual Control</button>
+                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
+            </div>
+            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
+            </div>
         </div>
     </div>
     
-    <!-- Parameters column -->
-    <div id="parameters-column" class="button-container">
-        <h2>Parameters</h2>
-        <div id="battery">Battery: </div>
-        <div id="manure">Manure Storage: </div>
-        <div id="cleaning">Last Cleaning Time: </div>
-        <div id="time">Time: </div>
-    </div>
-    
-    <!-- Schedule Cleaning Session form -->
-    <div id="scheduleForm">
-        <h2>Schedule Cleaning Session</h2>
-        <form id="scheduleForm">
-            <label for="scheduleDate">Date:</label>
-            <input type="date" id="scheduleDate" name="scheduleDate" required>
-            <br>
-            <label for="scheduleTime">Time:</label>
-            <input type="time" id="scheduleTime" name="scheduleTime" required>
-            <br>
-            <button type="submit">Schedule Cleaning</button>
-        </form>
-    </div>
-    
-    <!-- List of Scheduled Cleanings -->
-<div id="scheduled-cleanings">
-    <h2>Scheduled Cleanings</h2>
-    <ul id="scheduled-cleanings-list"></ul>
-</div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    	const tabs = document.querySelectorAll('.tab');
+    	const contents = document.querySelectorAll('.content');
+
+    	tabs.forEach(tab => {
+		tab.addEventListener('click', () => {
+		    const tabId = tab.dataset.tab;
+
+		    tabs.forEach(t => t.classList.remove('active'));
+		    contents.forEach(c => c.classList.remove('active'));
+
+		    tab.classList.add('active');
+		    document.getElementById(tabId).classList.add('active');
+		});
+	    });
+	});
+    </script>
 
 
-
-
-    
 </body>
 </html>
+
 

@@ -101,8 +101,8 @@ function showNotification(message) {
     }, 5000); // 5000 milliseconds = 5 seconds
 }
 
-// Example usage:
-showNotification('Robot is stuck!');
+// Example usage: 
+showNotification('Robot is connected!');
 
 /////////////////////////////////////NOTIFICATIONS//////////////////////////////////
 
@@ -142,6 +142,8 @@ addStatusUpdate('Robot is charging');
 
 // Function to handle form submission for scheduling cleaning session
 function handleFormSubmission(event) {
+
+   
     event.preventDefault(); // Prevent the default form submission behavior
 
     // Get the form data
@@ -163,9 +165,6 @@ function handleFormSubmission(event) {
     // Reset the form
     event.target.reset();
 }
-
-
-
 
 // Add an event listener to the form for submission
 document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmission);

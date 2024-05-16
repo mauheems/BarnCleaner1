@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 
+
 const server = http.createServer((req, res) => {
     // Log the URL of the request
     console.log(`Request URL: ${req.url}`);
@@ -89,7 +90,7 @@ wss.on('connection', ws => {
 // Import the necessary modules for ROS interaction
 const rosnodejs = require('rosnodejs');
 
-// Initialize ROS node
+// Initialize ROS node outside the controlRobot function
 rosnodejs.initNode('/robot_control').then(() => {
     console.log('ROS node initialized');
 }).catch((error) => {
@@ -106,9 +107,7 @@ rosnodejs.initNode('/robot_control').then(() => {
 // Function to call ROS service for controlling robot movement
 async function controlRobot(command) {
     try {
-        // Initialize ROS node
-        await rosnodejs.initNode('/robot_control');
-
+        
         // Get ROS node handle
         const nh = rosnodejs.nh;
 
@@ -146,12 +145,20 @@ async function controlRobot(command) {
         const services = serviceMap[command];
 
         if (services) {
+            
             // Call the ROS services with the appropriate parameters
             Object.entries(services).forEach(([wheel, serviceInfo]) => {
                 console.log(`Sending message to ${wheel} wheel: ${JSON.stringify({ service: serviceInfo.service, speed: serviceInfo.speed })}`);
-
+		
                 // Create ROS service client for the specified service name
                 const serviceClient = nh.serviceClient(serviceInfo.service, 'std_srvs/SetInt');
+
+		// Log if service client creation was successful
+                if (serviceClient) {
+                    console.log(`Service client created successfully for ${wheel} wheel`);
+                } else {
+                    console.error(`Failed to create service client for ${wheel} wheel`);
+                }
 
                 // Create request message
                 const request = new rosnodejs.ServiceRequest({
@@ -166,9 +173,6 @@ async function controlRobot(command) {
         } else {
             console.log('Unknown command:', command);
         }
-
-        // Shutdown ROS node
-        rosnodejs.shutdown();
     } catch (error) {
         console.error('Error in controlRobot function:', error);
     }
@@ -185,9 +189,10 @@ let scheduledCleanings = [];
 function startCleaning(scheduledCleaningIndex) {
     console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
     // Your cleaning logic goes here...
-
+	
     // Remove the scheduled cleaning from the list
     scheduledCleanings.splice(scheduledCleaningIndex, 1);
+    
 
 }
 
