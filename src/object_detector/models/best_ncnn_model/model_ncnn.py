@@ -1,26 +1,23 @@
 import numpy as np
 import ncnn
 import torch
+import cv2 as cv
+from ultralytics import YOLO
 
-def test_inference():
-    torch.manual_seed(0)
-    in0 = torch.rand(1, 3, 640, 640, dtype=torch.float)
-    out = []
+cv_img = cv.imread('code_mega/utralytics/data/images/val/image0239.jpg')
+out_img = cv.copyMakeBorder(cv_img, 80, 80, 0, 0, cv.BORDER_CONSTANT, None, value=0)
+# out_img = out_img.transpose((2, 0, 1)).astype(np.float32)
+# out_img = np.zeros_like(out_img)
 
-    with ncnn.Net() as net:
-        net.load_param("best_ncnn_model/model.ncnn.param")
-        net.load_model("best_ncnn_model/model.ncnn.bin")
+# with ncnn.Net() as net:
+#     net.load_param("best_ncnn_model/model.ncnn.param")
+#     net.load_model("best_ncnn_model/model.ncnn.bin")
+#     with net.create_extractor() as ex:
+#         # ex.input("in0", ncnn.Mat(in0.squeeze(0).numpy()).clone())
+#         ex.input("in0", ncnn.Mat(out_img).clone())
+#         out = ex.extract("out0")
 
-        with net.create_extractor() as ex:
-            ex.input("in0", ncnn.Mat(in0.squeeze(0).numpy()).clone())
-
-            _, out0 = ex.extract("out0")
-            out.append(torch.from_numpy(np.array(out0)).unsqueeze(0))
-
-    if len(out) == 1:
-        return out[0]
-    else:
-        return tuple(out)
-
-if __name__ == "__main__":
-    print(test_inference())
+model = YOLO('code_mega/group18/src/object_detector/models/best_ncnn_model')
+out = model.predict(source=out_img)
+# out2 = pass
+# print(out[0])

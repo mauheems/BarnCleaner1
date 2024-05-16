@@ -5,7 +5,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 # OpenCV2 for saving an image
 import cv2
-import ncnn
+import numpy as np
+from ultralytics import YOLO
 
 
 class YoloInference(object):
@@ -16,14 +17,11 @@ class YoloInference(object):
 
         rospy.Subscriber(image_topic, Image, self.yolo_inference)
 
-        self.net = ncnn.Net()
-        self.net.load_param("object_detector/models/best_ncnn_model/model.ncnn.param")
-        self.net.load_model("object_detector/models/best_ncnn_model/model.ncnn.bin")
-        self.ext = self.net.create_extractor()
+        self.model = YOLO('code_mega/group18/src/object_detector/models/best_ncnn_model')
 
     def yolo_inference(self, msg):
-        cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        ncnn.Mat.from_pixels(cv2_img)
-        _, out = self.ext('in')
+        cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8").astype(np.float32)
+        out = self.model.predictor(source=cv2_img)
+
 
 
