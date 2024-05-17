@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="rosbag" type="record" name="mapping_rosbag" required="true" args="
+    /scan
+    /mobile_base_controller/odom
+    -o mapping_
+    --split
+    --size=1024
+    --lz4"/>
+</launch>
