@@ -53,6 +53,17 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', ws => {
     console.log('WebSocket connected');
     
+    // Subscribe to the ROS topic /power/power_watcher
+    const powerSubscription = {
+        op: 'subscribe',
+        id: 'power_subscription',
+        topic: '/power/power_watcher',
+        type: 'std_msgs/Float32',
+    };
+    
+    ws.send(JSON.stringify(powerSubscription));
+
+    
     // Handle WebSocket messages
     ws.on('message', message => {
         const messageString = message.toString();
@@ -71,7 +82,7 @@ wss.on('connection', ws => {
         if (parsedMessage.command === 'buttonPress') {
             console.log('Button pressed:', parsedMessage.button);
             // Control the robot based on the button pressed
-            controlRobot(parsedMessage.button);
+            controlRobot(ws, parsedMessage.button);
         } else if (parsedMessage.command === 'schedule') {
             // Call function to handle scheduling
             addScheduledCleaning(parsedMessage.data.date, parsedMessage.data.time);
@@ -90,93 +101,108 @@ wss.on('connection', ws => {
 // Import the necessary modules for ROS interaction
 const rosnodejs = require('rosnodejs');
 
-// Initialize ROS node outside the controlRobot function
-rosnodejs.initNode('/robot_control').then(() => {
-    console.log('ROS node initialized');
-}).catch((error) => {
-    console.error('Error initializing ROS node:', error);
-});
-//////////////////////////////////////ROS NODE INITIALIZATION/////////////////////////
+// Initialize ROS node and handle
+rosnodejs.initNode('/robot_control')
+    .then((rosNode) => {
+        const nh = rosNode;
 
+        let lastBatteryUpdateTime = Date.now();
+        const batteryTimeout = 10000; // 10 seconds
+
+        // Subscribe to the ROS topic /power/power_watcher
+        nh.subscribe('/power/power_watcher', 'std_msgs/Float32', (data) => {
+            const batteryPercentage = data.data;
+            lastBatteryUpdateTime = Date.now();
+            console.log(`Battery percentage: ${batteryPercentage}%`);
+
+            // Broadcast power information to WebSocket clients
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
+                        op: 'publish',
+                        topic: '/power/power_watcher',
+                        msg: { data: batteryPercentage }
+                    }));
+                }
+            });
+        });
+
+        // Check for battery data availability
+        setInterval(() => {
+            if (Date.now() - lastBatteryUpdateTime > batteryTimeout) {
+                console.warn('No battery data available.');
+            }
+        }, batteryTimeout);
+
+        console.log('ROS node initialized');
+    })
+    .catch((error) => {
+        console.error('Error initializing ROS node:', error);
+    });
+
+//////////////////////////////////////ROS NODE INITIALIZATION/////////////////////////
 
 
 
 
 /////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
-// Function to call ROS service for controlling robot movement
-async function controlRobot(command) {
-    try {
-        
-        // Get ROS node handle
-        const nh = rosnodejs.nh;
-
-        // Define the service map to map commands to ROS service names and parameters
-        const serviceMap = {
-            forward: { 
-                left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
-                right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
-                left_back: { service: '/mirte/set_left_back_speed', speed: 70 },
-                right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
-            },
-            backward: { 
-                left_front: { service: '/mirte/set_left_front_speed', speed: -70 },
-                right_front: { service: '/mirte/set_right_front_speed', speed: -70 },
-                left_back: { service: '/mirte/set_left_back_speed', speed: -70 },
-                right_back: { service: '/mirte/set_right_back_speed', speed: -70 }
-            },
-            left: { 
-                right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
-                right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
-            },
-            right: { 
-                left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
-                left_back: { service: '/mirte/set_left_back_speed', speed: 70 }
-            },
-            stop: { 
-                left_front: { service: '/mirte/set_left_front_speed', speed: 0 },
-                right_front: { service: '/mirte/set_right_front_speed', speed: 0 },
-                left_back: { service: '/mirte/set_left_back_speed', speed: 0 },
-                right_back: { service: '/mirte/set_right_back_speed', speed: 0 }
-            }
-        };
-
-        // Get the ROS service information for the command
-        const services = serviceMap[command];
-
-        if (services) {
-            
-            // Call the ROS services with the appropriate parameters
-            Object.entries(services).forEach(([wheel, serviceInfo]) => {
-                console.log(`Sending message to ${wheel} wheel: ${JSON.stringify({ service: serviceInfo.service, speed: serviceInfo.speed })}`);
-		
-                // Create ROS service client for the specified service name
-                const serviceClient = nh.serviceClient(serviceInfo.service, 'std_srvs/SetInt');
-
-		// Log if service client creation was successful
-                if (serviceClient) {
-                    console.log(`Service client created successfully for ${wheel} wheel`);
-                } else {
-                    console.error(`Failed to create service client for ${wheel} wheel`);
-                }
-
-                // Create request message
-                const request = new rosnodejs.ServiceRequest({
-                    speed: serviceInfo.speed
-                });
-
-                // Call the ROS service
-                serviceClient.call(request, (response) => {
-                    console.log(`ROS service response for ${wheel} wheel:`, response);
-                });
-            });
-        } else {
-            console.log('Unknown command:', command);
+// Function to send control commands via WebSocket
+function controlRobot(ws, command) {
+    // Define the service map to map commands to ROS service names and parameters
+    const serviceMap = {
+        forward: { 
+            left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
+            right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
+            left_back: { service: '/mirte/set_left_back_speed', speed: 70 },
+            right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
+        },
+        backward: { 
+            left_front: { service: '/mirte/set_left_front_speed', speed: -70 },
+            right_front: { service: '/mirte/set_right_front_speed', speed: -70 },
+            left_back: { service: '/mirte/set_left_back_speed', speed: -70 },
+            right_back: { service: '/mirte/set_right_back_speed', speed: -70 }
+        },
+        left: { 
+            right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
+            right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
+        },
+        right: { 
+            left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
+            left_back: { service: '/mirte/set_left_back_speed', speed: 70 }
+        },
+        stop: { 
+            left_front: { service: '/mirte/set_left_front_speed', speed: 0 },
+            right_front: { service: '/mirte/set_right_front_speed', speed: 0 },
+            left_back: { service: '/mirte/set_left_back_speed', speed: 0 },
+            right_back: { service: '/mirte/set_right_back_speed', speed: 0 }
         }
-    } catch (error) {
-        console.error('Error in controlRobot function:', error);
+    };
+
+    // Get the ROS service information for the command
+    const services = serviceMap[command];
+
+    if (services) {
+        // Construct and send WebSocket messages for each service
+        Object.entries(services).forEach(([wheel, serviceInfo]) => {
+            // Construct the message with the "op" field
+            const message = {
+                op: 'call_service', // Set the operation to "call_service"
+                service: serviceInfo.service,
+                args: [{ speed: serviceInfo.speed }]
+            };
+
+            // Log the message for debugging
+            console.log(`Sending message to ${wheel} wheel: ${JSON.stringify(message)}`);
+
+            // Send the message via WebSocket
+            ws.send(JSON.stringify(message));
+        });
+    } else {
+        console.log('Unknown command:', command);
     }
 }
+
 //////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////

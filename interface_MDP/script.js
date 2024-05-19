@@ -4,11 +4,7 @@ var ws = new WebSocket('ws://localhost:8080');
 // Log a message when the WebSocket connection is opened
 ws.onopen = function() {
     console.log('WebSocket connected');
-    
 };
-
-
-
 
 //////////////////////////////////Manual control//////////////////////////////////////
 // Variable to track if the button is pressed
@@ -18,8 +14,8 @@ var buttonPressed = false;
 function sendButtonPress(command) {
     var manualBtn = document.getElementById('manualBtn');
     if (manualBtn.textContent === 'Automatic Control' || buttonPressed === false) {
-        // Send JSON-formatted message
-        ws.send(JSON.stringify({ command: 'buttonPress', button: command }));
+        // Send JSON-formatted message with 'op' field
+        ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: command }));
     }
 }
 
@@ -33,9 +29,8 @@ function handleMouseDown(command) {
 function handleMouseUp() {
     buttonPressed = false;
     // Send a command to stop the robot (set speed to 0)
-    ws.send(JSON.stringify({ command: 'buttonPress', button: 'stop' })); // Send JSON-formatted message for button release
+    ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: 'stop' })); // Send JSON-formatted message for button release
 }
-
 
 // Add event listeners to the buttons
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
@@ -57,7 +52,6 @@ document.getElementById('rightBtn').addEventListener('mousedown', function() {
     handleMouseDown('right');
 });
 document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
-
 
 // Event listener for the manual control button
 document.getElementById('manualBtn').addEventListener('click', function() {
@@ -84,6 +78,7 @@ document.getElementById('manualBtn').addEventListener('click', function() {
         console.log('Automatic Control');
     }
 });
+
 //////////////////////////////////Manual control//////////////////////////////////////
 
 
@@ -108,24 +103,75 @@ showNotification('Robot is connected!');
 
 
 
+/////////////////////////////////////BATTERY///////////////////////////////////////
+// WebSocket connection for receiving power information
+ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    if (message.op === 'publish' && message.topic === '/power/power_watcher') {
+        // Update battery parameter in HTML
+        document.getElementById('batteryParameter').innerText = `Battery: ${message.msg.data.toFixed(2)}%`;
+        console.log(`Battery percentage: ${message.msg.data.toFixed(2)}%`);
+    }
+};
+/////////////////////////////////////BATTERY///////////////////////////////////////
+
+
 ///////////////////////////////////STATUS//////////////////////////////////
 
-// Function to add a status update to the log with timestamp
-function addStatusUpdate(status) {
+// Function to update the status of each robot
+function updateRobotStatus(robotId, status) {
+    var robotStatusElement = document.getElementById(`status${robotId}`);
+    robotStatusElement.innerHTML = `Status: ${status} ${getStatusIcon(status)}`;
+    addStatusUpdate(robotId, status);
+}
+
+// Example usage:
+updateRobotStatus(1, 'cleaning');
+updateRobotStatus(2, 'charging');
+updateRobotStatus(3, 'stuck');
+updateRobotStatus(1, 'cleaning');
+updateRobotStatus(2, 'charging');
+updateRobotStatus(3, 'stuck');
+updateRobotStatus(1, 'cleaning');
+updateRobotStatus(2, 'charging');
+updateRobotStatus(3, 'stuck');
+
+// Function to get the status icon based on the status text
+function getStatusIcon(status) {
+    var iconClass = '';
+    if (status.includes('cleaning')) {
+        iconClass = 'fa-broom'; // Icon for cleaning
+    } else if (status.includes('charging')) {
+        iconClass = 'fa-charging-station'; // Icon for charging
+    } else if (status.includes('stuck')) {
+        iconClass = 'fa-exclamation-triangle'; // Icon for stuck
+    }
+    return `<i class="fas ${iconClass}"></i>`;
+}
+
+
+// Function to add a status update to the log with timestamp, robot ID, and status icon
+function addStatusUpdate(robotId, status) {
     var statusList = document.getElementById('status-list');
     var listItem = document.createElement('li');
-    
+
     // Get the current time
     var currentTime = new Date();
     var timestamp = currentTime.toLocaleString(); // Format timestamp as a string
-    
-    // Create a string with status and timestamp
-    var statusWithTimestamp = `${timestamp}: ${status}`;
-    listItem.textContent = statusWithTimestamp;
-    
+
+    // Create a string with status, timestamp, and robot ID
+    var statusWithTimestamp = `${timestamp}: Robot ${robotId} - ${status}`;
+
+    // Append the status text and icon to the list item
+    listItem.innerHTML = `${statusWithTimestamp} ${getStatusIcon(status)}`;
+
+    // Add CSS classes for styling
+    listItem.classList.add('status-item');
+
     // Add the status update to the log
     statusList.appendChild(listItem);
 }
+
 
 // Function to clear the status log
 function clearStatusLog() {
@@ -133,8 +179,7 @@ function clearStatusLog() {
     statusList.innerHTML = ''; // Clear all status updates
 }
 
-// Example usage:
-addStatusUpdate('Robot is charging');
+
 //////////////////////////////////STATUS///////////////////////////////////////////
 
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////

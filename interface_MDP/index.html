@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Control</title>
     <link rel="stylesheet" type="text/css" href="style.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></link>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -132,6 +133,17 @@
             margin-bottom: 10px;
         }
 
+	/* CSS styles for the status log */
+	#status-log-container {
+	    height: 200px; /* Set a fixed height for the status log container */
+	    overflow-y: auto; /* Enable vertical scrolling */
+	    border: 1px solid #ccc; /* Add a border for visual appeal */
+	    border-radius: 5px; /* Add border radius for rounded corners */
+	    padding: 10px; /* Add padding for better readability */
+	    list-style: none; /* Remove bullet points */
+	    margin-top: 20px; /* Add margin for spacing */
+	}
+
     </style>
 </head>
 <body>
@@ -174,7 +186,7 @@
 
     <div id="status" class="content">
         <!-- Status column -->
-        <div id="status-column" class="button-container">
+        <div id="status-log-container">
             <h2>Status</h2>
             <ul id="status-list"></ul> <!-- List to display status updates -->
         </div>
@@ -192,7 +204,10 @@
         <!-- Robot 1 -->
         <div class="robot-box">
             <h2>Robot 1</h2>
-            <div id="battery1">Battery: </div>
+            <div id="status1">Status: </div> <!-- Display status here -->
+            <div>
+            <p>Battery Percentage: <span id="battery-percentage">N/A</span>%</p>
+            </div>
             <div id="manure1">Manure Storage: </div>
             <!-- Manual control buttons for Robot 1 -->
             <div class="button-container button-container-vertical">
@@ -209,6 +224,7 @@
         <!-- Robot 2 -->
         <div class="robot-box">
             <h2>Robot 2</h2>
+            <div id="status2">Status: </div> <!-- Display status here -->
             <div id="battery2">Battery: </div>
             <div id="manure2">Manure Storage: </div>
             <!-- Manual control buttons for Robot 2 -->
@@ -226,6 +242,7 @@
         <!-- Robot 3 -->
         <div class="robot-box">
             <h2>Robot 3</h2>
+            <div id="status3">Status: </div> <!-- Display status here -->
             <div id="battery3">Battery: </div>
             <div id="manure3">Manure Storage: </div>
             <!-- Manual control buttons for Robot 3 -->
