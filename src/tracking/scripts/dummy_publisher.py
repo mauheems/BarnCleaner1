@@ -95,7 +95,7 @@ class dummuy_publisher:
         bbox2_msg = self.creat_bbox_msg(200,200,0,10,50)
         bbox3_msg = self.creat_bbox_msg(150,150,0,40,40)
         self.msg.bboxes = [bbox1_msg, bbox2_msg, bbox3_msg]
-        self.msg.classes = bytearray([0, 1, 0])
+        self.msg.classes = [0, 1, 0]
         self.msg.detection_score = [0.8,0.9,0.6]
 
 
