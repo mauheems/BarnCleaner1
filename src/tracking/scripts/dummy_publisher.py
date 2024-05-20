@@ -91,11 +91,11 @@ class dummuy_publisher:
 
 
     def creat_dummy_detection(self):
-        bbox1_msg = self.creat_bbox_msg(100,100,0,20,30)
-        bbox2_msg = self.creat_bbox_msg(200,200,0,10,50)
-        bbox3_msg = self.creat_bbox_msg(150,150,0,40,40)
+        bbox1_msg = self.creat_bbox_msg(300,300,0,20,30)
+        bbox2_msg = self.creat_bbox_msg(200,300,0,10,20)
+        bbox3_msg = self.creat_bbox_msg(400,400,0,20,20)
         self.msg.bboxes = [bbox1_msg, bbox2_msg, bbox3_msg]
-        self.msg.classes = [0, 1, 0]
+        self.msg.classes = [0, 1, 0]        # 0: feces, 1: obstacle
         self.msg.detection_score = [0.8,0.9,0.6]
 
 

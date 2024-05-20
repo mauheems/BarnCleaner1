@@ -1,4 +1,4 @@
-sstd_msgs/Header header
+std_msgs/Header header
 
 vision_msgs/BoundingBox2D[] bboxes
 uint16[] classes

@@ -97,7 +97,7 @@ class object_localization:
         self.cx = self.camera_info.K[2]
         self.cy = self.camera_info.K[5]
 
-        self.camera_detection_sub.unregister()
+        self.camera_info_sub.unregister()
 
 
     def detection_cb(self, detection_msg):
@@ -105,31 +105,57 @@ class object_localization:
             return
         
         bboxes = detection_msg.bboxes
-        classes = detection_msg.classes
-        detection_score = detection_msg.detection_score
+        classes = np.array(detection_msg.classes)
+        detection_score = np.array(detection_msg.detection_score)
+        rospy.loginfo(f'Got {len(bboxes)} detections: {len(classes[classes==0])} feces, {len(classes[classes==1])} obstacles')
+
+        depth_img = np.frombuffer(detection_msg.depth_img.data, dtype=np.uint16).reshape(detection_msg.depth_img.height, detection_msg.depth_img.width)
+        depth_img = depth_img.astype(np.float32) / 1000
+
         self.feces_relative_locations = []
         for bbox_, class_, detection_score_ in zip(bboxes, classes, detection_score):
             if detection_score_ < 0.5:
-                continue
+                rospy.loginfo('Low confidence detection!')
+                continue    # ignore low confidence detection
 
             center_u = bbox_.center.x
             center_v = bbox_.center.y
+            size_u = bbox_.size_x
+            size_v = bbox_.size_y
+
+            if center_v + size_v/2 < self.cy:
+                rospy.loginfo('Unreasonable detection!')
+                continue    # ignore unreasonable detection
 
             x = (center_u - self.cx) / self.fx
             y = (center_v - self.cy) / self.fy
 
-            if class_ == 1:
+            if class_ == 0:     # 0: feces, 1: obstacle
+                # plane intersection method
+                '''
                 Y = self.camera_height - self.feces_height/2
                 k = Y/y
 
                 X = k*x
                 Z = k
+                '''
+
+                # depth image method
+                r_fecess = 0.03
+                Z = np.average(depth_img[int(center_v-size_v/4):int(center_v+size_v/4):2, int(center_u-size_u/4):int(center_u+size_u/4):2]) + r_fecess
+                # TODO: transform to real distance
+                X = x*Z
+
 
                 self.feces_relative_locations.append([X, Z])
 
         # TODO: transform the relative location to the global location
-
+        rospy.loginfo(self.feces_relative_locations)
         self.update_feces_list(self.feces_relative_locations)
+        rospy.loginfo('Feces list:')
+        for feces_ in self.feces_list:
+            if feces_.state != State.DIED:
+                rospy.loginfo(f'Feces {feces_.uuid}: ({feces_.x}, {feces_.y}), state: {feces_.state}')
 
 
     def update_feces_list(self, feces_locations):
@@ -140,7 +166,7 @@ class object_localization:
             min_dist = 1000
             min_dist_idx = -1
             for i, feces_ in enumerate(self.feces_list):
-                if feces_.state == State.DIED:
+                if feces_.state == State.DIED or feces_.detected_this_frame:
                     continue
                 dist = np.linalg.norm(np.array(feces_location) - np.array([feces_.x, feces_.y]))
                 if dist < min_dist:
