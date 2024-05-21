@@ -1,5 +1,4 @@
-std_msgs/Header header
-
-bool[] in_view
-geometry_msgs/Point[] rel_location
-geometry_msgs/Point[] abs_location
+uint16 uuid
+bool in_view
+geometry_msgs/Point rel_location
+geometry_msgs/Point abs_location
