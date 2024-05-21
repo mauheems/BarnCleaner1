@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 import rospy
 from custom_msgs.msg import Detection
+from custom_msgs.msg import ObjectLocation
 from sensor_msgs.msg import Range
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
 from sensor_msgs.msg import Image
 from vision_msgs.msg import BoundingBox2D
+from geometry_msgs.msg import Point
 import numpy as np
 from enum import Enum
 
@@ -72,8 +74,8 @@ class feces:
 
 class object_localization:
     def __init__(self) -> None:
-        self.camera_height = 0.15
-        self.feces_height = 0.05
+        self.camera_height = 0.135
+        self.feces_height = 0.04
         self.camera_info = None
         self.feces_list = []
         self.next_id = 0
@@ -84,7 +86,7 @@ class object_localization:
 
         self.camera_info_sub = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.camera_info_cb)
         
-        # self.pub = rospy.Publisher('/tracker/object_location', , queue_size=10)
+        self.feces_pub = rospy.Publisher('/tracker/feces_location', ObjectLocation, queue_size=10)
 
         rospy.spin()
 
@@ -152,10 +154,33 @@ class object_localization:
         # TODO: transform the relative location to the global location
         rospy.loginfo(self.feces_relative_locations)
         self.update_feces_list(self.feces_relative_locations)
+
         rospy.loginfo('Feces list:')
         for feces_ in self.feces_list:
             if feces_.state != State.DIED:
                 rospy.loginfo(f'Feces {feces_.uuid}: ({feces_.x}, {feces_.y}), state: {feces_.state}')
+
+        feces_msg = ObjectLocation()
+        feces_msg.header = detection_msg.header
+        in_view = []
+        rel_locations_msg = []
+        abs_locations_msg = []
+        for feces_ in self.feces_list:
+            if feces_.state == State.ACTIVE or feces_.state == State.NOT_IN_SPOT:
+                rel_location_msg = Point()
+                rel_location_msg.x = feces_.x
+                rel_location_msg.y = feces_.y
+                rel_locations_msg.append(rel_location_msg)
+
+                if feces_.state == State.ACTIVE:
+                    in_view.append(True)
+                elif feces_.state == State.NOT_IN_SPOT:
+                    in_view.append(False)
+        feces_msg.in_view = in_view
+        feces_msg.rel_location = rel_locations_msg
+        feces_msg.abs_location = rel_locations_msg      # TODO
+
+        self.feces_pub.publish(feces_msg)
 
 
     def update_feces_list(self, feces_locations):
