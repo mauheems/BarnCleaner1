@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   vision_msgs
+  geometry_msgs
   message_generation
 )
 
@@ -53,6 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Detection.msg
+  ObjectLocation.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -75,6 +77,7 @@ generate_messages(
   sensor_msgs
   std_msgs
   vision_msgs
+  geometry_msgs
 )
 
 ################################################
@@ -109,7 +112,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES custom_msgs
-  CATKIN_DEPENDS message_runtime roscpp rospy sensor_msgs std_msgs vision_msgs
+  CATKIN_DEPENDS message_runtime roscpp rospy sensor_msgs std_msgs vision_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
