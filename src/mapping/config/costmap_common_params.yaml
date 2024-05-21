@@ -8,3 +8,4 @@ observation_sources: laser_scan_sensor odom_sensor
 
 laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: /scan, marking: true, clearing: true}
 #odom_sensor: {sensor_frame: frame_name, data_type: Odometry, topic: /mobile_base_controller/odom, marking: true, clearing: true}
+
