@@ -1,18 +1,39 @@
+<!-- DONE:
+- publish scheduled cleanings on html
+- make 2 columns of schedule cleaning
+- clear status button
+- bug with notification bar
+- fix containers
+- make status tab nicer
+-->
+
+<!-- TO DO:
+- edit font -> something less boring?
+
+- fix manual control buttons
+-->
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Control</title>
-    <link rel="stylesheet" type="text/css" href="style.css"> <!-- Link to your CSS file -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></link>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/shards.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center;
-            background-color: #f0f0f0;
+            background-color: #f5f5f5; /* Light gray */
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: grid;
             grid-gap: 20px; /* Gap between columns */
         }
@@ -22,8 +43,17 @@
             margin-top: 20px;
         }
 
+        /* Text color */
+        body,
+        .card-text,
+        .nav-link,
+        .nav-tabs .nav-item.show .nav-link,
+        .nav-tabs .nav-link.active {
+            color: #333; /* Dark gray */
+        }
+
         .button-container {
-            margin-top: 30px;
+            margin-top: 10px;
         }
 
         .button {
@@ -37,7 +67,7 @@
             cursor: pointer;
             border-radius: 5px;
             margin: 10px;
-            borde5r: none;
+            border: none;
             background-color: #4CAF50;
             color: white;
             transition: background-color 0.3s;
@@ -59,20 +89,26 @@
             justify-content: center;
             align-items: center;
         }
+        
         /* CSS styles for the notification banner */
-	#notification-banner {
-	    display: none; /* Initially hide the banner */
-	    position: fixed; /* Fixed position at the top of the screen */
-	    top: 0;
-	    left: 0;
-	    width: 100%; /* Full width */
-	    background-color: #ff0000; /* Red background color */
-	    color: #ffffff; /* White text color */
-	    padding: 10px; /* Add padding for better readability */
-	    text-align: center; /* Center-align the text */
-	    z-index: 1000; /* Ensure the banner appears above other content */
+        #notification-banner {
+            display: none; /* Initially hide the banner */
+            position: fixed; /* Fixed position at the top of the screen */
+            top: 0;
+            left: 0;
+            width: 100%; /* Full width */
+            background-color: #ff0000; /* Red background color */
+            color: #ffffff; /* White text color */
+            padding: 10px; /* Add padding for better readability */
+            text-align: center; /* Center-align the text */
+            z-index: 1000; /* Ensure the banner appears above other content */
+        }
+
+
+	/* Tabs container */
+	.nav-tabs {
+	    margin-bottom: 20px; /* Increase space between the tabs and tab content */
 	}
-	
         /* Tabs container */
         .tabs {
             display: flex;
@@ -85,7 +121,7 @@
             padding: 10px 20px;
             background-color: #ccc;
             border-radius: 5px 5px 0 0;
-            margin: 0 10px;
+            margin: 20 10px;
             cursor: pointer;
         }
 
@@ -97,6 +133,7 @@
         /* Content container */
         .content {
             display: none;
+            margin-bottom: 20px;
         }
 
         .content.active {
@@ -108,6 +145,8 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr); /* Three columns */
             grid-gap: 20px; /* Gap between columns */
+            margin-bottom: 20px; /* Add margin to the bottom of the robot container */
+            margin-top: 20px; /* Add margin to the bottom of the robot container */
         }
 
         .robot-box {
@@ -133,9 +172,87 @@
             margin-bottom: 10px;
         }
 
-	/* CSS styles for the status log */
-	#status-log-container {
-	    height: 200px; /* Set a fixed height for the status log container */
+	.status-log-wrapper {
+	    position: relative;
+	}
+	
+        /* CSS styles for the status log */
+        #status-log-container {
+            height: 200px; /* Set a fixed height for the status log container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 1px solid #ccc; /* Add a border for visual appeal */
+            border-radius: 5px; /* Add border radius for rounded corners */
+            padding: 10px; /* Add padding for better readability */
+            list-style: none; /* Remove bullet points */
+            margin-top: 20px; /* Add margin for spacing */
+        }
+        #clearStatusLogBtn {
+	    position: absolute;
+	    bottom: 10px;
+	    right: 60px;
+}
+     
+
+        .log-container,
+        .settings-container {
+            padding: 20px;
+        }
+
+        .robot-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .robot-box h2 {
+            margin-bottom: 10px;
+            margin-top: 20px
+            
+        }
+
+        .robot-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-icon {
+            margin-left: 10px;
+        }
+        
+        
+        
+        #scheduleForm {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #scheduleForm label {
+            margin-bottom: 5px;
+        }
+
+        #scheduleForm input {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #scheduleForm button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+
+        #scheduleForm button:hover {
+            background-color: #218838;
+        }
+
+       #scheduledCleaningsList {
+	    height: 200px; /* Set a fixed height for the scheduled cleanings list */
 	    overflow-y: auto; /* Enable vertical scrolling */
 	    border: 1px solid #ccc; /* Add a border for visual appeal */
 	    border-radius: 5px; /* Add border radius for rounded corners */
@@ -144,120 +261,245 @@
 	    margin-top: 20px; /* Add margin for spacing */
 	}
 
+        #scheduledCleaningsList li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #scheduledCleaningsList li:last-child {
+            border-bottom: none;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        /* CSS for Battery Percentage and Manure Storage Icons */
+	.battery {
+	    position: absolute;
+	    top: 160px;
+	    right: 10px;
+	    display: flex;
+	    align-items: center;
+	}
+	.manure {
+	    position: absolute;
+	    top: 180px;
+	    right: 10px;
+	    display: flex;
+	    align-items: center;
+	}
+
+	.battery i,
+	.manure i {
+	    margin-right: 5px;
+	}
+
+	/* Styles for Battery Percentage and Manure Storage Text */
+	.battery-percentage,
+	.manure-storage {
+	    font-size: 14px;
+	}
+	.btn-primary.btn-square.active {
+	    background-color: #007bff; /* Active color */
+	    border-color: #007bff; /* Active color */
+	}
     </style>
 </head>
 <body>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/roslib/1.1.0/roslib.min.js"></script>
     <script src="script.js" defer></script>
-    <h1>Robot Control</h1>
-    <div id="notification-banner"></div> <!-- Banner element for notifications -->
+    <!-- JavaScript Dependencies: jQuery, Popper.js, Bootstrap JS, Shards JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="js/shards.min.js"></script>
+
+    <div class="container">
+        <h1>Robot Control</h1>
+        <div id="notification-banner"></div>
     
     <!-- Tabs -->
-    <div class="tabs">
-        <div class="tab active" data-tab="cleaning">Cleaning Session</div>
-        <div class="tab" data-tab="status">Status</div>
-        <div class="tab" data-tab="mapping">Mapping</div>
-        <!-- Add more tabs here if needed -->
-    </div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <!-- Status Tab -->
+            <li class="nav-item">
+                <a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="true">Status</a>
+            </li>
+            
+            <!-- Cleaning Session Tab -->
+            <li class="nav-item">
+                <a class="nav-link" id="cleaning-session-tab" data-toggle="tab" href="#cleaning-session" role="tab" aria-controls="cleaning-session" aria-selected="false">Cleaning Session</a>
+            </li>
+            
+            <!-- Mapping Tab -->
+            <li class="nav-item">
+                <a class="nav-link" id="mapping-tab" data-toggle="tab" href="#mapping" role="tab" aria-controls="mapping" aria-selected="false">Mapping</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="content">
+            <!-- Status Tab Content -->
+            <div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
+		    <!-- Content for Status tab goes here -->
+		    <div class="status-log-wrapper">
+		    <h2>Status Log</h2>
+			<!-- Status column -->
+			<div id="status-log-container">
+			    
+			    <ul id="status-list"></ul> <!-- List to display status updates -->
+			</div>
+			<!-- Button to clear status log -->
+			<button id="clearStatusLogBtn" class="btn btn-outline-danger">Clear Status Log</button>
+		    </div>
+		</div>
+            
+            <!-- Cleaning Session Tab Content -->
+            <div class="tab-pane fade" id="cleaning-session" role="tabpanel" aria-labelledby="cleaning-session-tab">
+                <!-- Content for Cleaning Session tab goes here -->
+                <!-- Schedule Cleaning Session form -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="scheduleForm">
+                            <h2>Schedule Cleaning Session</h2>
+                            <form id="scheduleForm">
+                                <label for="scheduleDate">Date:</label>
+                                <input type="date" id="scheduleDate" name="scheduleDate" required>
+                                <br>
+                                <label for="scheduleTime">Time:</label>
+                                <input type="time" id="scheduleTime" name="scheduleTime" required>
+                                <br>
+                                <button type="submit" class="btn btn-outline-info">Schedule Cleaning</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- List of Scheduled Cleanings -->
+                        <div>
+                            <h3>Scheduled Cleanings</h3>
+                            <ul id="scheduledCleaningsList"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mapping Tab Content -->
+            <div class="tab-pane fade" id="mapping" role="tabpanel" aria-labelledby="mapping-tab">
+                <!-- Content for Mapping tab goes here -->
+                <p>Mapping tab content goes here.</p>
+            </div>
+        </div>
     
-        <!-- Content -->
-    <div id="cleaning" class="content active">
-        <!-- Schedule Cleaning Session form -->
-        <div id="scheduleForm">
-            <h2>Schedule Cleaning Session</h2>
-            <form id="scheduleForm">
-                <label for="scheduleDate">Date:</label>
-                <input type="date" id="scheduleDate" name="scheduleDate" required>
-                <br>
-                <label for="scheduleTime">Time:</label>
-                <input type="time" id="scheduleTime" name="scheduleTime" required>
-                <br>
-                <button type="submit">Schedule Cleaning</button>
-            </form>
-        </div>
-
-        <!-- List of Scheduled Cleanings -->
-        <div id="scheduled-cleanings">
-            <h2>Scheduled Cleanings</h2>
-            <ul id="scheduled-cleanings-list"></ul>
-        </div>
-    </div>
-
-    <div id="status" class="content">
-        <!-- Status column -->
-        <div id="status-log-container">
-            <h2>Status</h2>
-            <ul id="status-list"></ul> <!-- List to display status updates -->
-        </div>
-    </div>
-
-    <div id="mapping" class="content">
-        <!-- Mapping content goes here -->
-        <h2>Mapping</h2>
-        <!-- Add mapping elements here -->
-    </div>
+    
+    
+    
+    
+    
+    
     
    
-    <!-- Robot parameter boxes -->
-    <div class="robot-container">
-        <!-- Robot 1 -->
-        <div class="robot-box">
-            <h2>Robot 1</h2>
-            <div id="status1">Status: </div> <!-- Display status here -->
-            <div>
-            <p>Battery Percentage: <span id="battery-percentage">N/A</span>%</p>
-            </div>
-            <div id="manure1">Manure Storage: </div>
-            <!-- Manual control buttons for Robot 1 -->
-            <div class="button-container button-container-vertical">
-            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
-            <div class="button-container-horizontal">
-                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
-                <button id="manualBtn" class="button">Manual Control</button>
-                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
-            </div>
-            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
-            </div>
-        </div>
+<!-- Robot parameter boxes -->
+	<div class="row">
+	    <!-- Robot 1 -->
+	    <div class="col-md-4">
+		<div class="card"  style="width: 22rem;">
+		<img class="card-img" src="/pictures/robot3.png" alt="Card image"  style="width: 22rem;">
+			    <div class="card-body">
+				<h2 class="card-title">Robot 1</h2>
+				<!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="battery-percentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+				<div id="status1" class="mb-3">Status: </div> <!-- Display status here -->
+			    </div>
+			    <!-- Manual control buttons for Robot 1 -->
+				<div class="card-footer">
+				    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+				    <div>
+					<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+					<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+					<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+				    </div>
+				    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+				</div>
+		</div>
+	    </div>
 
-        <!-- Robot 2 -->
-        <div class="robot-box">
-            <h2>Robot 2</h2>
-            <div id="status2">Status: </div> <!-- Display status here -->
-            <div id="battery2">Battery: </div>
-            <div id="manure2">Manure Storage: </div>
-            <!-- Manual control buttons for Robot 2 -->
-            <div class="button-container button-container-vertical">
-            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
-            <div class="button-container-horizontal">
-                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
-                <button id="manualBtn" class="button">Manual Control</button>
-                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
-            </div>
-            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
-            </div>
-        </div>
 
-        <!-- Robot 3 -->
-        <div class="robot-box">
-            <h2>Robot 3</h2>
-            <div id="status3">Status: </div> <!-- Display status here -->
-            <div id="battery3">Battery: </div>
-            <div id="manure3">Manure Storage: </div>
-            <!-- Manual control buttons for Robot 3 -->
-            <div class="button-container button-container-vertical">
-            <button id="forwardBtn" class="button">&#8593;</button> <!-- Up arrow -->
-            <div class="button-container-horizontal">
-                <button id="leftBtn" class="button">&#8592;</button> <!-- Left arrow -->
-                <button id="manualBtn" class="button">Manual Control</button>
-                <button id="rightBtn" class="button">&#8594;</button> <!-- Right arrow -->
-            </div>
-            <button id="backwardBtn" class="button">&#8595;</button> <!-- Down arrow -->
-            </div>
-        </div>
+		<!-- Robot 2 -->
+	<div class="col-md-4">
+	    <div class="card" style="width: 22rem;">
+	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
+		<div class="card-body">
+		    <h2 class="card-title">Robot 2</h2>
+		    <!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="battery-percentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+		    <div id="status2" class="mb-3">Status: </div> <!-- Display status here -->
+		    
+		</div>
+		<!-- Manual control buttons for Robot 2 -->
+		<div class="card-footer">
+		    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+		    <div>
+			<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+			<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+			<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+		    </div>
+		    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+		</div>
+	    </div>
+	</div>
+
+	<!-- Robot 3 -->
+	<div class="col-md-4">
+	    <div class="card" style="width: 22rem;">
+	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
+		<div class="card-body">
+		    <h2 class="card-title">Robot 3</h2>
+		    <!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="battery-percentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+		    <div id="status3" class="mb-3">Status: </div> <!-- Display status here -->
+		    
+		</div>
+		<!-- Manual control buttons for Robot 3 -->
+		<div class="card-footer">
+		    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+		    <div>
+			<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+			<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+			<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+		    </div>
+		    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+		</div>
+	    </div>
+	</div>
+
     </div>
-    
+</div>  
     <script>
     document.addEventListener("DOMContentLoaded", function() {
     	const tabs = document.querySelectorAll('.tab');

@@ -53,6 +53,9 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', ws => {
     console.log('WebSocket connected');
     
+    // Send the current list of scheduled cleanings to the new client
+    sendScheduledCleanings(ws);
+    
     // Subscribe to the ROS topic /power/power_watcher
     const powerSubscription = {
         op: 'subscribe',
@@ -219,13 +222,36 @@ function startCleaning(scheduledCleaningIndex) {
     // Remove the scheduled cleaning from the list
     scheduledCleanings.splice(scheduledCleaningIndex, 1);
     
+    // Broadcast the updated list of scheduled cleanings to WebSocket clients
+    broadcastScheduledCleanings();
+    
 
 }
 
+// Function to send the current list of scheduled cleanings to a WebSocket client
+function sendScheduledCleanings(ws) {
+    const message = JSON.stringify({ op: 'update_scheduled_cleanings', scheduledCleanings });
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+    }
+}
 
 // Function to add a scheduled cleaning session
 function addScheduledCleaning(date, time) {
     scheduledCleanings.push({ date, time });
+
+    // Send the updated list of scheduled cleanings to WebSocket clients
+    broadcastScheduledCleanings();
+}
+
+// Function to broadcast the list of scheduled cleanings to WebSocket clients
+function broadcastScheduledCleanings() {
+    const message = JSON.stringify({ op: 'update_scheduled_cleanings', scheduledCleanings });
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
 }
 
 // Function to check scheduled cleanings
@@ -261,6 +287,10 @@ function checkScheduledCleanings() {
 
 // Schedule periodic checking of scheduled cleanings
 setInterval(checkScheduledCleanings, 10000); // Check every 10 seconds
+
+// Call the function to update the list initially
+// setInterval(updateScheduledCleaningsList, 10000); // Check every 10 seconds
+
 
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 

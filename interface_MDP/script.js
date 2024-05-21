@@ -12,8 +12,10 @@ var buttonPressed = false;
 
 // Function to send button press information to the server
 function sendButtonPress(command) {
-    var manualBtn = document.getElementById('manualBtn');
-    if (manualBtn.textContent === 'Automatic Control' || buttonPressed === false) {
+    const manualBtn = document.getElementById('manualBtn');
+    
+    // Check if manual control is active or if the button is not pressed
+    if (manualBtn.classList.contains('active') || !buttonPressed) {
         // Send JSON-formatted message with 'op' field
         ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: command }));
     }
@@ -22,17 +24,17 @@ function sendButtonPress(command) {
 // Function to handle mouse down event
 function handleMouseDown(command) {
     buttonPressed = true;
-    sendButtonPress(command); // Change this to the appropriate command
+    sendButtonPress(command);
 }
 
 // Function to handle mouse up event
 function handleMouseUp() {
     buttonPressed = false;
     // Send a command to stop the robot (set speed to 0)
-    ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: 'stop' })); // Send JSON-formatted message for button release
+    ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: 'stop' }));
 }
 
-// Add event listeners to the buttons
+// Add event listeners to the arrow buttons
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('forward');
 });
@@ -53,31 +55,49 @@ document.getElementById('rightBtn').addEventListener('mousedown', function() {
 });
 document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
 
-// Event listener for the manual control button
-document.getElementById('manualBtn').addEventListener('click', function() {
-    var manualBtn = document.getElementById('manualBtn');
-    var forwardBtn = document.getElementById('forwardBtn');
-    var backwardBtn = document.getElementById('backwardBtn');
-    var leftBtn = document.getElementById('leftBtn');
-    var rightBtn = document.getElementById('rightBtn');
+document.addEventListener("DOMContentLoaded", function() {
+    // Manual control button
+    const manualBtn = document.getElementById('manualBtn');
 
-    // Toggle the enabled state of directional buttons
-    if (manualBtn.textContent === 'Manual Control') {
-        forwardBtn.disabled = false;
-        backwardBtn.disabled = false;
-        leftBtn.disabled = false;
-        rightBtn.disabled = false;
-        manualBtn.textContent = 'Automatic Control';
-        console.log('Manual Control');
-    } else {
-        forwardBtn.disabled = true;
-        backwardBtn.disabled = true;
-        leftBtn.disabled = true;
-        rightBtn.disabled = true;
-        manualBtn.textContent = 'Manual Control';
-        console.log('Automatic Control');
-    }
+    // Manual control buttons
+    const forwardBtn = document.getElementById('forwardBtn');
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+    const backwardBtn = document.getElementById('backwardBtn');
+
+    // Event listener for manual control button
+    manualBtn.addEventListener('click', function() {
+        // Toggle the enabled state of the joystick icon and the arrow buttons
+        const isManual = manualBtn.classList.contains('active');
+        if (!isManual) {
+            // Enable manual control
+            manualBtn.classList.add('active');
+            forwardBtn.disabled = false;
+            leftBtn.disabled = false;
+            rightBtn.disabled = false;
+            backwardBtn.disabled = false;
+        } else {
+            // Disable manual control
+            manualBtn.classList.remove('active');
+            forwardBtn.disabled = true;
+            leftBtn.disabled = true;
+            rightBtn.disabled = true;
+            backwardBtn.disabled = true;
+        }
+    });
+
+    // Event listener for the arrow buttons
+    const arrowButtons = [forwardBtn, leftBtn, rightBtn, backwardBtn];
+    arrowButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const isManual = manualBtn.classList.contains('active');
+            if (isManual) {
+                sendButtonPress(button.id.replace('Btn', ''));
+            }
+        });
+    });
 });
+
 
 //////////////////////////////////Manual control//////////////////////////////////////
 
@@ -173,22 +193,52 @@ function addStatusUpdate(robotId, status) {
 }
 
 
+// JavaScript file
+document.addEventListener("DOMContentLoaded", function() {
+    // Add event listener to the clear status log button
+    const clearStatusLogBtn = document.getElementById('clearStatusLogBtn');
+    if (clearStatusLogBtn) {
+        clearStatusLogBtn.addEventListener('click', clearStatusLog);
+    }
+});
+
 // Function to clear the status log
 function clearStatusLog() {
-    var statusList = document.getElementById('status-list');
-    statusList.innerHTML = ''; // Clear all status updates
+    const statusList = document.getElementById('status-list');
+    if (statusList) {
+        // Clear all status log entries
+        statusList.innerHTML = '';
+    }
 }
-
 
 //////////////////////////////////STATUS///////////////////////////////////////////
 
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
+// WebSocket connection for handling scheduled cleaning updates
+ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    if (message.op === 'update_scheduled_cleanings') {
+        const scheduledCleanings = message.scheduledCleanings;
+        updateScheduledCleaningsList(scheduledCleanings);
+    }
+};
+
+// Function to update the list of scheduled cleanings in the HTML
+function updateScheduledCleaningsList(scheduledCleanings) {
+    var scheduledCleaningsList = document.getElementById('scheduledCleaningsList');
+    scheduledCleaningsList.innerHTML = ''; // Clear the existing list
+
+    // Iterate over the scheduled cleanings and create list items for each
+    scheduledCleanings.forEach((scheduledCleaning, index) => {
+        var listItem = document.createElement('li');
+        listItem.textContent = `Date: ${scheduledCleaning.date}, Time: ${scheduledCleaning.time}`;
+        scheduledCleaningsList.appendChild(listItem);
+    });
+}
 
 
 // Function to handle form submission for scheduling cleaning session
 function handleFormSubmission(event) {
-
-   
     event.preventDefault(); // Prevent the default form submission behavior
 
     // Get the form data
@@ -201,19 +251,16 @@ function handleFormSubmission(event) {
         date: scheduleDate,
         time: scheduleTime
     };
-	
     
     // Send the schedule data to the server via WebSocket
     ws.send(JSON.stringify({ command: 'schedule', data: schedule }));
 
-    
     // Reset the form
     event.target.reset();
 }
 
 // Add an event listener to the form for submission
 document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmission);
-
 
 //////////////////////////////SCHEDULE CLEANING////////////////////////////////////////
 
