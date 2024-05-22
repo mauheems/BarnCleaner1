@@ -1,0 +1,52 @@
+<launch>
+  <!-- Static transform from base_link to camera_link -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_camera_broadcaster" args="0 0 0 0 0 0 base_link camera_link" />
+
+  <!-- Static transform from camera_link to camera_color_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_color_broadcaster" args="0.001112083223383956 -0.025263082782372777 0.00011685867212889429 -0.00036957073707978013 0.0008493881794769256 -0.001761227241118803 0.9999980200159377 camera_link camera_color_frame" />
+
+  <!-- Static transform from camera_link to camera_depth_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_depth_broadcaster" args="0 0 0 0 0 0 camera_link camera_depth_frame" />
+
+  <!-- Static transform from camera_link to camera_ir_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_ir_broadcaster" args="0 0 0 0 0 0 camera_link camera_ir_frame" />
+
+  <!-- Static transform from camera_color_frame to camera_color_optical_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="color_to_color_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_color_frame camera_color_optical_frame" />
+
+  <!-- Static transform from camera_depth_frame to camera_depth_optical_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
+
+  <!-- Static transform from camera_ir_frame to camera_ir_optical_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="ir_to_ir_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_ir_frame camera_ir_optical_frame" />
+
+  <!-- Static transform from base_link to laser -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser" />
+
+  <!-- Start the SLAM node -->
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+    <param name="base_frame" value="base_link"/>
+    <param name="scan" value="/scan"/>
+    <param name="map_update_interval" value="0.1"/>
+  </node>
+
+  <!-- Map Server to publish the map for AMCL -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find navigation)/maps/map_stairwayhall.yaml" />
+
+  <!-- AMCL for localization -->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <param name="base_frame_id" value="base_link"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="scan_topic" value="/scan"/>
+    <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
+  </node>
+
+  <!-- Move Base for navigation -->
+  <node pkg="move_base" type="move_base" name="move_base" output="screen">
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load"/>
+  </node>
+</launch>
