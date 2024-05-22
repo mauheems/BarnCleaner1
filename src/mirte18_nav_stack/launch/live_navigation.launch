@@ -1,6 +1,10 @@
 <launch>
-  <!-- Load the saved map -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find mapping)/maps/map_stairwayhall.yaml" />
+  <!-- Start the SLAM node -->
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+    <param name="base_frame" value="base_link"/>
+    <param name="odom_frame" value="odom"/>
+    <param name="map_update_interval" value="5.0"/>
+  </node>
 
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">

@@ -9,3 +9,16 @@ TrajectoryPlannerROS:
   acc_lim_y: 2.5
 
   holonomic_robot: true
+
+  yaw_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.2
+  latch_xy_goal_tolerance: true
+  pdist_scale: 0.6
+  gdist_scale: 0.8
+  occdist_scale: 0.01
+  heading_lookahead: 0.325
+  heading_scoring: false
+  heading_scoring_timestep: 0.8
+  meter_scoring: true
+  publish_cost_grid_pc: true
+  planner_frequency: 2.0
