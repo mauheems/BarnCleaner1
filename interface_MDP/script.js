@@ -17,7 +17,7 @@ function sendButtonPress(command) {
     // Check if manual control is active or if the button is not pressed
     if (manualBtn.classList.contains('active') || !buttonPressed) {
         // Send JSON-formatted message with 'op' field
-        ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: command }));
+        ws.send(JSON.stringify({ op: 'call_service', service: '/mirte/set_left_front_speed', speed: 70, command: 'buttonPress', button: command }));
     }
 }
 
@@ -29,32 +29,34 @@ function handleMouseDown(command) {
 
 // Function to handle mouse up event
 function handleMouseUp() {
-    buttonPressed = false;
-    // Send a command to stop the robot (set speed to 0)
-    ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: 'stop' }));
+    // Check if the button was pressed
+    if (buttonPressed) {
+        // Reset the flag indicating the button is pressed
+        buttonPressed = false;
+        // Send a command to stop the robot (set speed to 0)
+        sendButtonPress('stop');
+    }
 }
 
 // Add event listeners to the arrow buttons
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('forward');
 });
-document.getElementById('forwardBtn').addEventListener('mouseup', handleMouseUp);
-
 document.getElementById('backwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('backward');
 });
-document.getElementById('backwardBtn').addEventListener('mouseup', handleMouseUp);
-
 document.getElementById('leftBtn').addEventListener('mousedown', function() {
     handleMouseDown('left');
 });
-document.getElementById('leftBtn').addEventListener('mouseup', handleMouseUp);
-
 document.getElementById('rightBtn').addEventListener('mousedown', function() {
     handleMouseDown('right');
 });
-document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
 
+// Add mouseup event listener to the document
+document.addEventListener('mouseup', handleMouseUp);
+
+// Add mouseup event listener to the document
+document.addEventListener('mouseup', handleMouseUp);
 document.addEventListener("DOMContentLoaded", function() {
     // Manual control button
     const manualBtn = document.getElementById('manualBtn');
@@ -188,8 +190,12 @@ function addStatusUpdate(robotId, status) {
     // Add CSS classes for styling
     listItem.classList.add('status-item');
 
-    // Add the status update to the log
-    statusList.appendChild(listItem);
+    // Add the status update to the top of the log
+    if (statusList.firstChild) {
+        statusList.insertBefore(listItem, statusList.firstChild);
+    } else {
+        statusList.appendChild(listItem);
+    }
 }
 
 

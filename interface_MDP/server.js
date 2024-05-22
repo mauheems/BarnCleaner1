@@ -150,6 +150,14 @@ rosnodejs.initNode('/robot_control')
 
 /////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
+// Establish WebSocket connection with the ROSBridge server
+var ws9090 = new WebSocket('ws://localhost:9090');
+
+// Log a message when the WebSocket connection is opened
+ws9090.onopen = function() {
+    console.log('WebSocket connected');
+};
+
 // Function to send control commands via WebSocket
 function controlRobot(ws, command) {
     // Define the service map to map commands to ROS service names and parameters
@@ -199,14 +207,15 @@ function controlRobot(ws, command) {
             console.log(`Sending message to ${wheel} wheel: ${JSON.stringify(message)}`);
 
             // Send the message via WebSocket
-            ws.send(JSON.stringify(message));
+            ws9090.send(JSON.stringify(message));
         });
     } else {
         console.log('Unknown command:', command);
     }
 }
 
-//////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
+
+////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 const { scheduleJob } = require('node-schedule');
@@ -236,9 +245,15 @@ function sendScheduledCleanings(ws) {
     }
 }
 
-// Function to add a scheduled cleaning session
 function addScheduledCleaning(date, time) {
     scheduledCleanings.push({ date, time });
+
+    // Sort the scheduled cleanings by date and time
+    scheduledCleanings.sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        return dateA - dateB;
+    });
 
     // Send the updated list of scheduled cleanings to WebSocket clients
     broadcastScheduledCleanings();
@@ -288,8 +303,6 @@ function checkScheduledCleanings() {
 // Schedule periodic checking of scheduled cleanings
 setInterval(checkScheduledCleanings, 10000); // Check every 10 seconds
 
-// Call the function to update the list initially
-// setInterval(updateScheduledCleaningsList, 10000); // Check every 10 seconds
 
 
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
