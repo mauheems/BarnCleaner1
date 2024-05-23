@@ -41,7 +41,7 @@ class TF_Model(object):
         #     bbox_list.append(bbox)
         img = output_image.numpy_view()
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        self.img_pub.publish(self.bridge.cv2_to_compressed_imgmsg(img, 'bgr8'))
+        self.img_pub.publish(self.bridge.cv2_to_imgmsg(img, 'bgr8'))
 
     def load_model(self):
         base_options = python.BaseOptions(model_asset_path=self.model_path)
@@ -53,8 +53,10 @@ class TF_Model(object):
 
     def inference(self, msg: Image):
         print("image_published")
-        cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8").astype(np.float32)
-        self.detector.detect_async(cv2_img, msg.header)
+        cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        rgb_image = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
+        self.detector.detect_async(mp_image, msg.header.seq)
         print("detection_published")
 
 
