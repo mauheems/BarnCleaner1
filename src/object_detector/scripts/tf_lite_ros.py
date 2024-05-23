@@ -62,10 +62,11 @@ class TF_Model(object):
 
 if __name__ == '__main__':
     print(os.getcwd())
-    yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite0.tflite')
-    yi.load_model()
+    # yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite0.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite2.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_float32.tflite')
-    # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_int8.tflite')
+    yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_int8.tflite')
+    # yi = TF_Model('src/object_detector/models/tf_lites/model.tflite')
+    yi.load_model()
     while not rospy.is_shutdown():
         rospy.spin()
