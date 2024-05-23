@@ -5,7 +5,7 @@ import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
-# from custom_msgs.msg import Detection
+from custom_msgs.msg import Detection
 from geometry_msgs.msg import Pose2D
 from vision_msgs.msg import BoundingBox2D
 
@@ -23,6 +23,8 @@ class YoloInference(object):
         rospy.Subscriber(image_topic, Image, self.yolo_inference)
         self.img_pub = rospy.Publisher('/detection_yolo/image', Image, queue_size=1)
 
+        self.bboxes = None
+
         self.model = YOLO('src/object_detector/models/best_ncnn_model')
         # self.out_msg =
         print("Model loaded")
@@ -34,17 +36,18 @@ class YoloInference(object):
         out_img = out[0].plot().astype(np.uint8)
         self.img_pub.publish(self.bridge.cv2_to_imgmsg(out_img, 'bgr8'))
         print("detection_published")
-        # boxes = out.boxes.xywh
-        # self.bboxes = []
-        # for box in boxes:
-        #     pose = Pose2D()
-        #     pose.x = box[0]
-        #     pose.y = box[1]
-        #     pose.theta = 0
-        #     obox = BoundingBox2D()
-        #     obox.center = pose
-        #     obox.size_x = box[2]
-        #     obox.size_y = box[3]
+        boxes = out[0].boxes.xywh
+        self.bboxes = []
+        for box in boxes:
+            pose = Pose2D()
+            pose.x = box[0]
+            pose.y = box[1]
+            pose.theta = 0
+            out_box = BoundingBox2D()
+            out_box.center = pose
+            out_box.size_x = box[2]
+            out_box.size_y = box[3]
+            self.bboxes.append(out_box)
 
 
 if __name__ == '__main__':
