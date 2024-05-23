@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 
 import cv2
@@ -9,10 +9,10 @@ from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Pose2D
 from cv_bridge import CvBridge, CvBridgeError
 
-
 from mediapipe.tasks import python
 import mediapipe as mp
 from mediapipe.tasks.python import vision
+
 
 class TF_Model(object):
     def __init__(self, model_path):
@@ -43,7 +43,6 @@ class TF_Model(object):
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         self.img_pub.publish(self.bridge.cv2_to_compressed_imgmsg(img, 'bgr8'))
 
-
     def load_model(self):
         base_options = python.BaseOptions(model_asset_path=self.model_path)
         options = vision.ObjectDetectorOptions(base_options=base_options,
@@ -51,7 +50,6 @@ class TF_Model(object):
                                                score_threshold=0.5,
                                                result_callback=self.visualize_callback)
         self.detector = vision.ObjectDetector.create_from_options(options)
-
 
     def inference(self, msg: Image):
         print("image_published")
@@ -63,6 +61,7 @@ class TF_Model(object):
 if __name__ == '__main__':
     print(os.getcwd())
     yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite0.tflite')
+    yi.load_model()
     # yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite2.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_float32.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_int8.tflite')
