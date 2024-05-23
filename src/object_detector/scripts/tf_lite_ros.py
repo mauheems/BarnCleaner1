@@ -28,19 +28,27 @@ class TF_Model(object):
 
     def visualize_callback(self, result: vision.ObjectDetectorResult,
                            output_image: mp.Image, timestamp_ms: int):
-        # bbox_list = []
-        # for det in result.detections:
-        #     bbox = BoundingBox2D()
-        #     pose = Pose2D()
-        #     pose.x = det.bounding_box.origin_x
-        #     pose.y = det.bounding_box.origin_y
-        #     pose.theta = 0
-        #     bbox.center = pose
-        #     bbox.size_x = det.bounding_box.width
-        #     bbox.size_y = det.bounding_box.height
-        #     bbox_list.append(bbox)
         img = output_image.numpy_view()
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        bbox_list = []
+        for det in result.detections:
+            bbox = BoundingBox2D()
+            pose = Pose2D()
+            pose.x = det.bounding_box.origin_x
+            pose.y = det.bounding_box.origin_y
+            pose.theta = 0
+            bbox.center = pose
+            bbox.size_x = det.bounding_box.width
+            bbox.size_y = det.bounding_box.height
+            bbox_list.append(bbox)
+            if True:
+                print("bbox")
+                top_left = (int(det.bounding_box.origin_x),
+                            int(det.bounding_box.origin_y))
+                bottom_right = (int(det.bounding_box.origin_x + det.bounding_box.width),
+                                int(det.bounding_box.origin_y + det.bounding_box.height))
+                img = cv2.rectangle(img, top_left, bottom_right, (255, 0, 0))
+
         self.img_pub.publish(self.bridge.cv2_to_imgmsg(img, 'bgr8'))
 
     def load_model(self):
@@ -62,11 +70,11 @@ class TF_Model(object):
 
 if __name__ == '__main__':
     print(os.getcwd())
-    yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite0.tflite')
+    # yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite0.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/efficientdet_lite2.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_float32.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/ssd_mobilenet_v2_int8.tflite')
-    # yi = TF_Model('src/object_detector/models/tf_lites/efficientnet_tuned.tflite')
+    yi = TF_Model('src/object_detector/models/tf_lites/efficientnet_tuned.tflite')
     # yi = TF_Model('src/object_detector/models/tf_lites/model.tflite')
     yi.load_model()
     while not rospy.is_shutdown():
