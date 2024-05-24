@@ -40,7 +40,8 @@
      <depend>vision_msgs</depend>
      <depend>sensor_msgs</depend>
      <depend>cv_bridge</depend>
-     <depend>python-opencv-python</depend>
+     <depend>python3-opencv</depend>
+     <depend>numpy</depend>
   <!--   Note that this is equivalent to the following: -->
   <!--   <build_depend>roscpp</build_depend> -->
   <!--   <exec_depend>roscpp</exec_depend> -->

@@ -1,4 +1,19 @@
-### Object Detector
+## Object Detector
+
+### For running on the robot
+Run the following two commands:
+```shell
+rosrun object_detector custom_msg_util
+rosrun object_detector run_object_detector
+```
+
+Topics
+```
+/object_detector/detections
+
+```
+
+### Run yolo only
 
 commands to run in separate terminals on the robot
 ```shell
