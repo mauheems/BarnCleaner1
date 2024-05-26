@@ -80,8 +80,9 @@ class object_localization:
 
         rospy.init_node('object_localization', anonymous=True)
 
-        self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
-
+        #self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
+        self.camera_detection_sub = rospy.Subscriber('/object_detector/detections', Detection, self.detection_cb)
+        
         self.camera_info_sub = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.camera_info_cb)
         
         # self.pub = rospy.Publisher('/tracker/object_location', , queue_size=10)
@@ -113,10 +114,13 @@ class object_localization:
         depth_img = depth_img.astype(np.float32) / 1000
 
         self.feces_relative_locations = []
-        for bbox_, class_, detection_score_ in zip(bboxes, classes, detection_score):
-            if detection_score_ < 0.5:
-                rospy.loginfo('Low confidence detection!')
-                continue    # ignore low confidence detection
+        
+        #for bbox_, class_, detection_score_ in zip(bboxes, classes, detection_score):
+        for bbox_ in bboxes:
+            rospy.loginfo(f'fsfsf')
+            # if detection_score_ < 0.5:
+            #     rospy.loginfo('Low confidence detection!')
+            #     continue    # ignore low confidence detection
 
             center_u = bbox_.center.x
             center_v = bbox_.center.y
@@ -130,27 +134,28 @@ class object_localization:
             x = (center_u - self.cx) / self.fx
             y = (center_v - self.cy) / self.fy
 
-            if class_ == 0:     # 0: feces, 1: obstacle
+            #if class_ == 0:     # 0: feces, 1: obstacle
+            if True:
                 # plane intersection method
-                '''
                 Y = self.camera_height - self.feces_height/2
                 k = Y/y
 
                 X = k*x
-                Z = k
-                '''
+                Z = k + 0.04
+                
+                rospy.loginfo(f'Feces detected at ({X}, {Z})')
 
+                '''
                 # depth image method
                 r_fecess = 0.03
                 Z = np.average(depth_img[int(center_v-size_v/4):int(center_v+size_v/4):2, int(center_u-size_u/4):int(center_u+size_u/4):2]) + r_fecess
                 # TODO: transform to real distance
                 X = x*Z
-
+                '''
 
                 self.feces_relative_locations.append([X, Z])
 
         # TODO: transform the relative location to the global location
-        rospy.loginfo(self.feces_relative_locations)
         self.update_feces_list(self.feces_relative_locations)
         rospy.loginfo('Feces list:')
         for feces_ in self.feces_list:
