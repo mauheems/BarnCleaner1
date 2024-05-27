@@ -20,13 +20,6 @@ uint16[] classes
 float32[] detection_score
 sensor_msgs/Image source_img
 sensor_msgs/Image depth_img
-
-float32 min_range
-float32 max_range
-float32 range_lf
-float32 range_lr
-float32 range_rf
-float32 range_rr
 '''
 
 
@@ -139,23 +132,20 @@ class object_localization:
 
             #if class_ == 0:     # 0: feces, 1: obstacle
             if True:
-                # plane intersection method
-                Y = self.camera_height - self.feces_height/2
-                k = Y/y
-
-                X = k*x
-                Z = k + 0.04
-                
-                rospy.loginfo(f'Feces detected at ({X}, {Z})')
-
-                '''
                 # depth image method
                 r_fecess = 0.03
                 Z = np.average(depth_img[int(center_v-size_v/4):int(center_v+size_v/4):2, int(center_u-size_u/4):int(center_u+size_u/4):2]) + r_fecess
-                # TODO: transform to real distance
                 X = x*Z
-                '''
 
+                if Z < 0.8:     # depth not working in low distance
+                    # plane intersection method
+                    Y = self.camera_height - self.feces_height/2
+                    k = Y/y
+                    X = k*x
+                    Z = k
+
+                Z += 0.04   # convert to LiDAR frame
+                rospy.loginfo(f'Feces detected at ({X}, {Z})')
                 self.feces_relative_locations.append([X, Z])
 
         # TODO: transform the relative location to the global location
