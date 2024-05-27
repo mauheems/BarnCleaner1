@@ -39,7 +39,7 @@ class feces:
         self.continuous_detection_count = 0
         self.continuous_no_detection_count = 0
         self.detected_this_frame = True
-        self.rho = 0.9
+        self.rho = 0.5
 
     def update(self, location):
         if location == None:
@@ -58,7 +58,7 @@ class feces:
             self.continuous_no_detection_count = 0
             self.continuous_detection_count += 1
 
-            if self.continuous_detection_count > 3:
+            if self.continuous_detection_count >= 2:
                 self.state = State.ACTIVE
 
     def kill(self):
