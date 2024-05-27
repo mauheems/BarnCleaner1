@@ -1,13 +1,14 @@
 <launch>
-<!--     <param name="use_sim_time" type="boolean" value="true" /> -->
+    <param name="use_sim_time" type="boolean" value="true" />
 <!--  Launch rosbag and remap tf to old_tf -->
-    <node pkg="rosbag" type="play" name="rosbag" args="/workspace/RO47007/rosbags/bags/2024-05-08-08-06-26.bag /tf:=/old_tf" />
 <!--     <node pkg="rosbag" type="play" name="rosbag" args="/workspace/RO47007/rosbags/bags/2024-05-08-08-06-26.bag" /> -->
 
 <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 0 1 link1_parent link1 100" /> -->
-    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 camera_link laser 100" />
+    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
 <!--     <node pkg="tf" type="static_transform_publisher" name="laser_transform" args="0 0 0 1.57 0 0 1 base_link laser 100"/> -->
-    <node pkg="tf" type="static_transform_publisher" name="astra_transform_color" args="0 0 0 0 0 -1.57 1 camera_color_optical_frame laser 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="astra_transform_depth" args="0 0 0 0 0 -1.57 1 laser camera_depth_optical_frame 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="astra_transform_ir" args="0 0 0 0 0 -1.57 1 camera_ir_optical_frame laser 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="astra_transform_color" args="0 0 0 3.14 0 -1.57 laser camera_color_optical_frame 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="astra_transform_depth" args="0 0 0 3.14 0 -1.57 laser camera_depth_optical_frame 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="astra_transform_ir" args="0 0 0 3.14 0 -1.57 laser camera_ir_optical_frame 100"/>
 </launch>
+
+<!--     <node pkg="rosbag" type="play" name="rosbag" args="/workspace/RO47007/rosbags/bags/2024-05-08-08-06-26.bag /tf:=/old_tf -/-clock" /> -->
