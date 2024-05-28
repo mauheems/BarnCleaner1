@@ -14,8 +14,7 @@
   <!-- Static transform from camera_color_frame to camera_color_optical_frame -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="color_to_color_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_color_frame camera_color_optical_frame" />
 
-  <!-- Static transform from camera_depth_frame to camera_depth_optical_frame -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
+sh  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
 
   <!-- Static transform from camera_ir_frame to camera_ir_optical_frame -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="ir_to_ir_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_ir_frame camera_ir_optical_frame" />
