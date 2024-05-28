@@ -6,7 +6,9 @@ ws.onopen = function() {
     console.log('WebSocket connected');
 };
 
+
 //////////////////////////////////Manual control//////////////////////////////////////
+
 // Variable to track if the button is pressed
 var buttonPressed = false;
 
@@ -14,10 +16,10 @@ var buttonPressed = false;
 function sendButtonPress(command) {
     const manualBtn = document.getElementById('manualBtn');
     
-    // Check if manual control is active or if the button is not pressed
-    if (manualBtn.classList.contains('active') || !buttonPressed) {
+    // Check if manual control is active
+    if (manualBtn.classList.contains('active')) {
         // Send JSON-formatted message with 'op' field
-        ws.send(JSON.stringify({ op: 'call_service', service: '/mirte/set_left_front_speed', speed: 70, command: 'buttonPress', button: command }));
+        ws.send(JSON.stringify({ op: 'call_service', command: 'buttonPress', button: command }));
     }
 }
 
@@ -42,21 +44,26 @@ function handleMouseUp() {
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('forward');
 });
+document.getElementById('forwardBtn').addEventListener('mouseup', handleMouseUp);
+
 document.getElementById('backwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('backward');
 });
+document.getElementById('backwardBtn').addEventListener('mouseup', handleMouseUp);
+
 document.getElementById('leftBtn').addEventListener('mousedown', function() {
     handleMouseDown('left');
 });
+document.getElementById('leftBtn').addEventListener('mouseup', handleMouseUp);
+
 document.getElementById('rightBtn').addEventListener('mousedown', function() {
     handleMouseDown('right');
 });
+document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
 
-// Add mouseup event listener to the document
+// Add mouseup event listener to the document to handle mouse up outside of buttons
 document.addEventListener('mouseup', handleMouseUp);
 
-// Add mouseup event listener to the document
-document.addEventListener('mouseup', handleMouseUp);
 document.addEventListener("DOMContentLoaded", function() {
     // Manual control button
     const manualBtn = document.getElementById('manualBtn');
@@ -72,6 +79,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Toggle the enabled state of the joystick icon and the arrow buttons
         const isManual = manualBtn.classList.contains('active');
         if (!isManual) {
+        
+            updateRobotStatus(1, 'manual');
             // Enable manual control
             manualBtn.classList.add('active');
             forwardBtn.disabled = false;
@@ -80,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
             backwardBtn.disabled = false;
         } else {
             // Disable manual control
+            updateRobotStatus(1, 'waiting for commands');
             manualBtn.classList.remove('active');
             forwardBtn.disabled = true;
             leftBtn.disabled = true;
@@ -87,21 +97,8 @@ document.addEventListener("DOMContentLoaded", function() {
             backwardBtn.disabled = true;
         }
     });
-
-    // Event listener for the arrow buttons
-    const arrowButtons = [forwardBtn, leftBtn, rightBtn, backwardBtn];
-    arrowButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const isManual = manualBtn.classList.contains('active');
-            if (isManual) {
-                sendButtonPress(button.id.replace('Btn', ''));
-            }
-        });
-    });
 });
 
-
-//////////////////////////////////Manual control//////////////////////////////////////
 
 
 
@@ -125,18 +122,6 @@ showNotification('Robot is connected!');
 
 
 
-/////////////////////////////////////BATTERY///////////////////////////////////////
-// WebSocket connection for receiving power information
-ws.onmessage = function(event) {
-    const message = JSON.parse(event.data);
-    if (message.op === 'publish' && message.topic === '/power/power_watcher') {
-        // Update battery parameter in HTML
-        document.getElementById('batteryParameter').innerText = `Battery: ${message.msg.data.toFixed(2)}%`;
-        console.log(`Battery percentage: ${message.msg.data.toFixed(2)}%`);
-    }
-};
-/////////////////////////////////////BATTERY///////////////////////////////////////
-
 
 ///////////////////////////////////STATUS//////////////////////////////////
 
@@ -147,16 +132,12 @@ function updateRobotStatus(robotId, status) {
     addStatusUpdate(robotId, status);
 }
 
+
 // Example usage:
-updateRobotStatus(1, 'cleaning');
-updateRobotStatus(2, 'charging');
-updateRobotStatus(3, 'stuck');
-updateRobotStatus(1, 'cleaning');
-updateRobotStatus(2, 'charging');
-updateRobotStatus(3, 'stuck');
-updateRobotStatus(1, 'cleaning');
-updateRobotStatus(2, 'charging');
-updateRobotStatus(3, 'stuck');
+updateRobotStatus(1, 'waiting for commands');
+updateRobotStatus(2, 'waiting for commands');
+updateRobotStatus(3, 'waiting for commands');
+
 
 // Function to get the status icon based on the status text
 function getStatusIcon(status) {
@@ -167,9 +148,18 @@ function getStatusIcon(status) {
         iconClass = 'fa-charging-station'; // Icon for charging
     } else if (status.includes('stuck')) {
         iconClass = 'fa-exclamation-triangle'; // Icon for stuck
+    } else if (status.includes('mapping')) {
+        iconClass = 'fa-map'; // Icon for mapping
+    } else if (status.includes('manual')) {
+        iconClass = 'fas fa-gamepad'; // Icon for manual control
+    } else if (status.includes('waiting for commands')) {
+        iconClass = 'fa-hourglass-half'; // Icon for waiting
     }
+
     return `<i class="fas ${iconClass}"></i>`;
 }
+
+
 
 
 // Function to add a status update to the log with timestamp, robot ID, and status icon
@@ -199,23 +189,14 @@ function addStatusUpdate(robotId, status) {
 }
 
 
-// JavaScript file
-document.addEventListener("DOMContentLoaded", function() {
-    // Add event listener to the clear status log button
-    const clearStatusLogBtn = document.getElementById('clearStatusLogBtn');
-    if (clearStatusLogBtn) {
-        clearStatusLogBtn.addEventListener('click', clearStatusLog);
-    }
+// Event listener for the "Yep" button in the modal to clear the status log
+document.getElementById('confirmClearStatusLog').addEventListener('click', function() {
+    // Clear the status log
+    document.getElementById('status-list').innerHTML = '';
+    // Hide the modal
+    $('#clearStatusModal').modal('hide');
 });
 
-// Function to clear the status log
-function clearStatusLog() {
-    const statusList = document.getElementById('status-list');
-    if (statusList) {
-        // Clear all status log entries
-        statusList.innerHTML = '';
-    }
-}
 
 //////////////////////////////////STATUS///////////////////////////////////////////
 
@@ -223,9 +204,16 @@ function clearStatusLog() {
 // WebSocket connection for handling scheduled cleaning updates
 ws.onmessage = function(event) {
     const message = JSON.parse(event.data);
+    
     if (message.op === 'update_scheduled_cleanings') {
         const scheduledCleanings = message.scheduledCleanings;
         updateScheduledCleaningsList(scheduledCleanings);
+    }
+    
+     // Handle battery percentage updates
+    else if (message.op == 'battery_percentage') {
+        const percentage = message.msg.percentage;
+        document.getElementById('batteryPercentage').textContent = percentage.toFixed(2) + '%';
     }
 };
 
@@ -268,5 +256,71 @@ function handleFormSubmission(event) {
 // Add an event listener to the form for submission
 document.getElementById('scheduleForm').addEventListener('submit', handleFormSubmission);
 
+// Event listener for the "Yes, Clear" button in the modal to clear the scheduled cleanings log
+document.getElementById('confirmClearScheduledCleanings').addEventListener('click', function() {
+    // Clear the scheduled cleanings log
+    document.getElementById('scheduledCleaningsList').innerHTML = '';
+    // Hide the modal
+    $('#clearScheduledCleaningsModal').modal('hide');
+});
+
+
 //////////////////////////////SCHEDULE CLEANING////////////////////////////////////////
+
+
+////////////////////////////////MAPPING////////////////////////////////////////////
+// Establish WebSocket connection with the ROSBridge server
+var ws9090 = new WebSocket('ws://localhost:9090');
+
+document.getElementById('confirmStartMapping').addEventListener('click', function () {
+    // Close the modal
+    $('#startMappingModal').modal('hide');
+
+    // Call the ROS service to start mapping
+    startMapping();
+    
+    updateRobotStatus(1, 'mapping');
+});
+
+function startMapping() {
+    // Log to confirm the function is called
+    console.log('Attempting to start mapping...');
+
+    // Define the ROS service call details
+    const startMappingCall = {
+      op: 'call_service',
+      service: '/start_mapping_service', // Replace with your actual service name
+      args: {} // Replace with actual service arguments if needed
+    };
+
+    // Log the service call message
+    console.log('Service call message:', startMappingCall);
+
+    // Send the service call message to the WebSocket
+    ws9090.send(JSON.stringify(startMappingCall));
+}
+
+
+
+// Add event listener to the stop mapping button
+document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
+    // Call the function to return to the cleaning station
+    returnToChargingStation();
+    // Hide the modal
+    $('#stopMappingModal').modal('hide');
+});
+
+////////////////////////////////MAPPING////////////////////////////////////////////
+
+
+////////////////////////////////RETURN TO CHARGING STATION//////////////////////////
+// Function to return to cleaning station
+function returnToChargingStation() {
+    // Call service or perform necessary actions to return to cleaning station
+    console.log('Returning to charging station.');
+    updateRobotStatus(1, 'returning to charging station');
+}
+////////////////////////////////RETURN TO CHARGING STATION//////////////////////////
+
+
 

@@ -56,17 +56,6 @@ wss.on('connection', ws => {
     // Send the current list of scheduled cleanings to the new client
     sendScheduledCleanings(ws);
     
-    // Subscribe to the ROS topic /power/power_watcher
-    const powerSubscription = {
-        op: 'subscribe',
-        id: 'power_subscription',
-        topic: '/power/power_watcher',
-        type: 'std_msgs/Float32',
-    };
-    
-    ws.send(JSON.stringify(powerSubscription));
-
-    
     // Handle WebSocket messages
     ws.on('message', message => {
         const messageString = message.toString();
@@ -95,6 +84,45 @@ wss.on('connection', ws => {
     });
 });
 
+// Establish WebSocket connection with the ROSBridge server
+var ws9090 = new WebSocket('ws://localhost:9090');
+var ws = new WebSocket('ws://localhost:8080');
+
+// Log a message when the WebSocket connection is opened
+ws9090.onopen = function() {
+    console.log('WebSocket connected');
+    
+    // Subscribe to the ROS topic /power/power_watcher
+    const powerSubscription = {
+        op: 'subscribe',
+        id: 'power_subscription',
+        topic: '/mirte/power/power_watcher',
+        type: 'sensor_msgs/BatteryState',
+    };
+    
+    ws9090.send(JSON.stringify(powerSubscription));
+
+};
+
+
+// Handle incoming messages from the WebSocket
+ws9090.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    
+    // Check if the message is from the power watcher topic
+    if (message.topic === '/mirte/power/power_watcher') {
+    
+        // Extract the percentage value from the message
+        const percentage = message.msg.percentage * 100; // Convert to percentage
+        
+        
+        // Send the percentage value to the client
+        ws.send(JSON.stringify({op: 'battery_percentage', percentage}));
+    }
+};
+
+
+
 ////////////////////////////WEBSOCKET CONNECTION////////////////////////////////////
 
 
@@ -109,34 +137,6 @@ rosnodejs.initNode('/robot_control')
     .then((rosNode) => {
         const nh = rosNode;
 
-        let lastBatteryUpdateTime = Date.now();
-        const batteryTimeout = 10000; // 10 seconds
-
-        // Subscribe to the ROS topic /power/power_watcher
-        nh.subscribe('/power/power_watcher', 'std_msgs/Float32', (data) => {
-            const batteryPercentage = data.data;
-            lastBatteryUpdateTime = Date.now();
-            console.log(`Battery percentage: ${batteryPercentage}%`);
-
-            // Broadcast power information to WebSocket clients
-            wss.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({
-                        op: 'publish',
-                        topic: '/power/power_watcher',
-                        msg: { data: batteryPercentage }
-                    }));
-                }
-            });
-        });
-
-        // Check for battery data availability
-        setInterval(() => {
-            if (Date.now() - lastBatteryUpdateTime > batteryTimeout) {
-                console.warn('No battery data available.');
-            }
-        }, batteryTimeout);
-
         console.log('ROS node initialized');
     })
     .catch((error) => {
@@ -150,13 +150,7 @@ rosnodejs.initNode('/robot_control')
 
 /////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
-// Establish WebSocket connection with the ROSBridge server
-var ws9090 = new WebSocket('ws://localhost:9090');
 
-// Log a message when the WebSocket connection is opened
-ws9090.onopen = function() {
-    console.log('WebSocket connected');
-};
 
 // Function to send control commands via WebSocket
 function controlRobot(ws, command) {
@@ -165,28 +159,28 @@ function controlRobot(ws, command) {
         forward: { 
             left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
             right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
-            left_back: { service: '/mirte/set_left_back_speed', speed: 70 },
-            right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
+            left_back: { service: '/mirte/set_left_rear_speed', speed: 70 },
+            right_back: { service: '/mirte/set_right_rear_speed', speed: 70 }
         },
         backward: { 
             left_front: { service: '/mirte/set_left_front_speed', speed: -70 },
             right_front: { service: '/mirte/set_right_front_speed', speed: -70 },
-            left_back: { service: '/mirte/set_left_back_speed', speed: -70 },
-            right_back: { service: '/mirte/set_right_back_speed', speed: -70 }
+            left_back: { service: '/mirte/set_left_rear_speed', speed: -70 },
+            right_back: { service: '/mirte/set_right_rear_speed', speed: -70 }
         },
         left: { 
             right_front: { service: '/mirte/set_right_front_speed', speed: 70 },
-            right_back: { service: '/mirte/set_right_back_speed', speed: 70 }
+            right_back: { service: '/mirte/set_right_rear_speed', speed: 70 }
         },
         right: { 
             left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
-            left_back: { service: '/mirte/set_left_back_speed', speed: 70 }
+            left_back: { service: '/mirte/set_left_rear_speed', speed: 70 }
         },
         stop: { 
             left_front: { service: '/mirte/set_left_front_speed', speed: 0 },
             right_front: { service: '/mirte/set_right_front_speed', speed: 0 },
-            left_back: { service: '/mirte/set_left_back_speed', speed: 0 },
-            right_back: { service: '/mirte/set_right_back_speed', speed: 0 }
+            left_back: { service: '/mirte/set_left_rear_speed', speed: 0 },
+            right_back: { service: '/mirte/set_right_rear_speed', speed: 0 }
         }
     };
 
@@ -200,6 +194,7 @@ function controlRobot(ws, command) {
             const message = {
                 op: 'call_service', // Set the operation to "call_service"
                 service: serviceInfo.service,
+                type: '/mirte_msgs/SetMotorSpeed',
                 args: [{ speed: serviceInfo.speed }]
             };
 
@@ -223,10 +218,22 @@ const { scheduleJob } = require('node-schedule');
 // Define a list to store scheduled dates and times
 let scheduledCleanings = [];
 
+
 // Function to start cleaning
 function startCleaning(scheduledCleaningIndex) {
     console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
-    // Your cleaning logic goes here...
+    // Define the ROS service call details
+    const startCleaningCall = {
+      op: 'call_service',
+      service: '/start_cleaning_service', // Replace with your actual service name
+      args: {} // Replace with actual service arguments if needed
+    };
+
+    // Log the service call message
+    console.log('Service call message:', startCleaningCall);
+
+    // Send the service call message to the WebSocket
+    ws9090.send(JSON.stringify(startCleaningCall));
 	
     // Remove the scheduled cleaning from the list
     scheduledCleanings.splice(scheduledCleaningIndex, 1);
@@ -268,6 +275,8 @@ function broadcastScheduledCleanings() {
         }
     });
 }
+
+
 
 // Function to check scheduled cleanings
 function checkScheduledCleanings() {
