@@ -31,6 +31,9 @@
     <param name="base_frame_id" value="base_link"/>
     <param name="odom_frame_id" value="odom"/>
     <param name="scan_topic" value="/scan"/>
+<!--     <param name="initial_pose_x" value="1.636"/>  --><!-- Initial pose x --><!--
+    <param name="initial_pose_y" value="1.769"/>  --><!-- Initial pose y --><!--
+    <param name="initial_pose_a" value="-0.787"/>  --><!-- Initial pose yaw (orientation) --> -->
     <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
   </node>
 
@@ -41,5 +44,6 @@
     <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
     <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load"/>
+    <remap from="/cmd_vel" to="/mobile_base_controller/cmd_vel"/> <!-- Remap cmd_vel topic -->
   </node>
 </launch>
