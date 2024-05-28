@@ -14,7 +14,8 @@
   <!-- Static transform from camera_color_frame to camera_color_optical_frame -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="color_to_color_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_color_frame camera_color_optical_frame" />
 
-sh  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
+  <!-- Static transform from camera_depth_frame to camera_depth_optical_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_depth_frame camera_depth_optical_frame" />
 
   <!-- Static transform from camera_ir_frame to camera_ir_optical_frame -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="ir_to_ir_optical_broadcaster" args="0 0 0 -0.5 0.5 -0.5 0.5 camera_ir_frame camera_ir_optical_frame" />
@@ -22,15 +23,8 @@ sh  <node pkg="tf2_ros" type="static_transform_publisher" name="depth_to_depth_o
   <!-- Static transform from base_link to laser -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser" />
 
-  <!-- Start the SLAM node -->
-  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
-    <param name="base_frame" value="base_link"/>
-    <param name="scan" value="/scan"/>
-    <param name="map_update_interval" value="0.1"/>
-  </node>
-
   <!-- Map Server to publish the map for AMCL -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find navigation)/maps/map_stairwayhall.yaml" />
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/mirte/maps/my_map.yaml" />
 
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
