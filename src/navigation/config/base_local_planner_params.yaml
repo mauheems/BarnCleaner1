@@ -23,3 +23,6 @@ TrajectoryPlannerROS:
   publish_cost_grid_pc: true
   planner_frequency: 2.0  # Reduce planner frequency if necessary
   controller_frequency: 2.0 # Reduce controller frequency if necessary
+
+  base_frame_id: odom
+  global_frame_id: map
