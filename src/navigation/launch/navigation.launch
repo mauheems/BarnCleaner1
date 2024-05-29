@@ -36,7 +36,7 @@
     <arg name="odom_frame" default="odom"/>
     <arg name="scan_topic" default="scan"/>
     <arg name="map_size" default="2048"/>
-    
+
     <!-- <param name="initial_pose_x" value="1.636"/> Initial pose x -->
     <!-- <param name="initial_pose_y" value="1.769"/> Initial pose y -->
     <!-- <param name="initial_pose_a" value="-0.787"/> Initial pose yaw (orientation) -->

@@ -3,12 +3,12 @@
     <!-- <param name="base_frame" value="base_link"/> -->
     <!-- <param name="scan" value="/scan"/> -->
 
-    <param name="base_frame" value="$(arg base_frame)"/>
-    <param name="odom_frame" value="$(arg odom_frame)"/>
+    <param name="base_frame" value="map"/>
+    <param name="odom_frame" value="odom"/>
     <param name="map_frame" value="map"/>
 
-    <param name="scan" value="$(arg scan_topic)"/>
-    
+    <param name="scan" value="scan"/>
+
     <param name="map_update_interval" value="0.1"/>
   </node>
 </launch>
