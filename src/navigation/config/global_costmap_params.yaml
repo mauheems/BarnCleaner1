@@ -8,3 +8,6 @@ global_costmap:
   static_map: true
   width: 10.0  # for now
   height: -10.0  # for now
+  
+  origin_x: 0.0
+  origin_y: 0.0
