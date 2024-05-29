@@ -25,7 +25,7 @@ TrajectoryPlannerROS:
   controller_frequency: 2.0 # Reduce controller frequency if necessary
 
   base_frame_id: base_link
-  global_frame_id: global_frame
+  global_frame_id: map
 
   map_frame_id: map
   map_origin_x: 0.0

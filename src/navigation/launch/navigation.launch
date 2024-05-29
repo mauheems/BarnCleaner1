@@ -28,14 +28,21 @@
 
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
-    <param name="base_frame_id" value="base_link"/>
-    <param name="odom_frame_id" value="odom"/>
-    <param name="scan_topic" value="/scan"/>
-<!--     <param name="initial_pose_x" value="1.636"/>  --><!-- Initial pose x --><!--
-    <param name="initial_pose_y" value="1.769"/>  --><!-- Initial pose y --><!--
-    <param name="initial_pose_a" value="-0.787"/>  --><!-- Initial pose yaw (orientation) --> -->
+    <!-- <param name="base_frame_id" value="base_link"/> -->
+    <!-- <param name="odom_frame_id" value="odom"/> -->
+    <!-- <param name="scan_topic" value="/scan"/> -->
+
+    <arg name="base_frame" default="base_link"/>
+    <arg name="odom_frame" default="odom"/>
+    <arg name="scan_topic" default="scan"/>
+    <arg name="map_size" default="2048"/>
+    
+    <!-- <param name="initial_pose_x" value="1.636"/> Initial pose x -->
+    <!-- <param name="initial_pose_y" value="1.769"/> Initial pose y -->
+    <!-- <param name="initial_pose_a" value="-0.787"/> Initial pose yaw (orientation) -->
+
     <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
-  </node>
+  </node> 
 
   <!-- Move Base for navigation -->
   <node pkg="move_base" type="move_base" name="move_base" output="screen">
