@@ -4,3 +4,5 @@ build/
 devel/
 .gitlab-ci-local/
 .idea/
+.hypothesis/
+frames*
