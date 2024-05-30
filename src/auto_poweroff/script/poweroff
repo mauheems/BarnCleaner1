@@ -1,0 +1,10 @@
+import rospy
+from auto_poweroff import AutoPoweroff
+
+if __name__ == '__main__':
+    node_name = 'auto_poweroff_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = AutoPoweroff()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()
