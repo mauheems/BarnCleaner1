@@ -6,7 +6,6 @@
 
 <!-- TO DO:
 - add popups for manual control initiation -> terminate cleaning session.
-- scheduled cleanings list not cleared in terminal with clear schedule button
 - add clear schedule button per schedule
 - make sure startcleaning function updates status
 -->
@@ -328,6 +327,10 @@
 	#mapping-instructions {
 	    text-align: left; /* Align text to the left */
 	}
+	
+	canvas {
+            border: 1px solid black;
+        }
     </style>
 </head>
 <body>
@@ -338,7 +341,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="js/shards.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+    
+    
+    
+    
     <div class="container">
         <h1>Robot Control</h1>
         <div id="notification-banner"></div>
@@ -350,18 +357,7 @@
                 <a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="true">Status</a>
             </li>
             
-            <!-- Cleaning Ses/* Style for the mapping instructions container */
-#mapping-instructions-container {
-    background-color: #f8f9fa; /* Light gray background */
-    padding: 20px; /* Add some padding */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-}
-
-/* Style for the mapping instructions */
-#mapping-instructions {
-    text-align: left; /* Align text to the left */
-}sion Tab -->
+            
             <li class="nav-item">
                 <a class="nav-link" id="cleaning-session-tab" data-toggle="tab" href="#cleaning-session" role="tab" aria-controls="cleaning-session" aria-selected="false">Cleaning Session</a>
             </li>
@@ -456,8 +452,10 @@
 		</div>
 
 
-
-                
+		<h1>Map Visualization</h1>
+		    <canvas id="map" width="800" height="600"></canvas>
+		    <script src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+		    <script src="https://cdn.jsdelivr.net/npm/ros2djs/build/ros2d.min.js"></script>	
 
             </div>
         </div>

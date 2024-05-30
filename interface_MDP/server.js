@@ -1,16 +1,16 @@
-
 ///////////////////////////////////////SERVER//////////////////////////////////////////
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const WebSocket = require('ws');
+const ROSLIB = require('roslib');
 
+// Initialize the WebSocket connection
+const ws = new WebSocket('ws://localhost:8080');
 
-
+// Create the HTTP server
 const server = http.createServer((req, res) => {
-    // Log the URL of the request
     console.log(`Request URL: ${req.url}`);
-
-    // Serve the index.html file
     if (req.url === '/' || req.url === '/index.html') {
         fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
             if (err) {
@@ -22,7 +22,6 @@ const server = http.createServer((req, res) => {
             res.end(data);
         });
     } else {
-        // Handle other requests (e.g., script.js)
         const filePath = path.join(__dirname, req.url);
         fs.readFile(filePath, (err, data) => {
             if (err) {
@@ -41,27 +40,37 @@ const port = 8080;
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-///////////////////////////////SERVER//////////////////////////////////
 
+//////////////////////////////ROSLIB////////////////////////////////////
+const ros = new ROSLIB.Ros({
+  url: 'ws://localhost:9090' // Replace <robot_ip> with the actual IP address of the robot
+});
+
+ros.on('connection', () => {
+  console.log('Connected to websocket server.');
+});
+
+ros.on('error', (error) => {
+  console.log('Error connecting to websocket server: ', error);
+});
+
+ros.on('close', () => {
+  console.log('Connection to websocket server closed.');
+});
 
 ////////////////////////////WEBSOCKET CONNECTION////////////////////////////////////
-// WebSocket connection for logging button presses
-const WebSocket = require('ws');
 const wss = new WebSocket.Server({ server });
 
-// WebSocket connection for handling button presses and scheduling commands
 wss.on('connection', ws => {
     console.log('WebSocket connected');
     
     // Send the current list of scheduled cleanings to the new client
     sendScheduledCleanings(ws);
-    
-    // Handle WebSocket messages
+
     ws.on('message', message => {
         const messageString = message.toString();
         console.log('Received message:', messageString);
 
-        // Parse the message as JSON
         let parsedMessage;
         try {
             parsedMessage = JSON.parse(messageString);
@@ -70,62 +79,43 @@ wss.on('connection', ws => {
             return;
         }
 
-        // Check if it's a button press command
         if (parsedMessage.command === 'buttonPress') {
             console.log('Button pressed:', parsedMessage.button);
-            // Control the robot based on the button pressed
-            controlRobot(ws, parsedMessage.button);
+            controlRobot(parsedMessage.button);
         } else if (parsedMessage.command === 'schedule') {
-            // Call function to handle scheduling
             addScheduledCleaning(parsedMessage.data.date, parsedMessage.data.time);
-        } else {
-            console.error('Unknown command:', parsedMessage.command);
-        }
+        } else if (parsedMessage.command === 'startMapping') {
+            const mapTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/map',
+                messageType: 'nav_msgs/OccupancyGrid'
+            });
+
+            mapTopic.subscribe(message => {
+                ws.send(JSON.stringify({ topic: '/map', msg: message }));
+            });
+    	}       
+    });
+
+    
+    
+    // Subscribe to the /mirte/power/power_watcher topic
+    const batteryStateTopic = new ROSLIB.Topic({
+      ros: ros,
+      name: '/mirte/power/power_watcher',
+      messageType: 'sensor_msgs/BatteryState'
+    });
+
+    batteryStateTopic.subscribe(message => {
+      //console.log('Received message on ' + batteryStateTopic.name + ': ', message);
+      ws.send(JSON.stringify({
+        op: 'battery_percentage',
+        percentage: (message.percentage * 100).toFixed(0)
+      }));
     });
 });
 
-// Establish WebSocket connection with the ROSBridge server
-var ws9090 = new WebSocket('ws://localhost:9090');
-var ws = new WebSocket('ws://localhost:8080');
-
-// Log a message when the WebSocket connection is opened
-ws9090.onopen = function() {
-    console.log('WebSocket connected');
-    
-    // Subscribe to the ROS topic /power/power_watcher
-    const powerSubscription = {
-        op: 'subscribe',
-        id: 'power_subscription',
-        topic: '/mirte/power/power_watcher',
-        type: 'sensor_msgs/BatteryState',
-    };
-    
-    ws9090.send(JSON.stringify(powerSubscription));
-
-};
-
-
-// Handle incoming messages from the WebSocket
-ws9090.onmessage = function(event) {
-    const message = JSON.parse(event.data);
-    
-    // Check if the message is from the power watcher topic
-    if (message.topic === '/mirte/power/power_watcher') {
-    
-        // Extract the percentage value from the message
-        const percentage = message.msg.percentage * 100; // Convert to percentage
-        
-        
-        // Send the percentage value to the client
-        ws.send(JSON.stringify({op: 'battery_percentage', percentage}));
-    }
-};
-
-
-
 ////////////////////////////WEBSOCKET CONNECTION////////////////////////////////////
-
-
 
 
 //////////////////////////////////////ROS NODE INITIALIZATION/////////////////////////
@@ -151,10 +141,25 @@ rosnodejs.initNode('/robot_control')
 /////////////////////////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
 
+// Function to set motor speed
+function setMotorSpeed(ros, serviceName, speed) {
+    var setMotorSpeedClient = new ROSLIB.Service({
+        ros: ros,
+        name: serviceName,
+        serviceType: 'mirte_msgs/SetMotorSpeed'
+    });
 
-// Function to send control commands via WebSocket
-function controlRobot(ws, command) {
-    // Define the service map to map commands to ROS service names and parameters
+    var request = new ROSLIB.ServiceRequest({
+        speed: speed
+    });
+
+    setMotorSpeedClient.callService(request, function(result) {
+        console.log('Result for service call on ' + setMotorSpeedClient.name + ': ' + result);
+    });
+}
+
+// Function to control the robot
+function controlRobot(command) {
     const serviceMap = {
         forward: { 
             left_front: { service: '/mirte/set_left_front_speed', speed: 70 },
@@ -184,67 +189,33 @@ function controlRobot(ws, command) {
         }
     };
 
-    // Get the ROS service information for the command
     const services = serviceMap[command];
 
-    if (services) {
-        // Construct and send WebSocket messages for each service
-        Object.entries(services).forEach(([wheel, serviceInfo]) => {
-            // Construct the message with the "op" field
-            const message = {
-                op: 'call_service', // Set the operation to "call_service"
-                service: serviceInfo.service,
-                type: '/mirte_msgs/SetMotorSpeed',
-                args: [{ speed: serviceInfo.speed }]
-            };
-
-            // Log the message for debugging
-            console.log(`Sending message to ${wheel} wheel: ${JSON.stringify(message)}`);
-
-            // Send the message via WebSocket
-            ws9090.send(JSON.stringify(message));
-        });
-    } else {
-        console.log('Unknown command:', command);
-    }
+   
+    Object.entries(services).forEach(([wheel, serviceInfo]) => {
+        setMotorSpeed(ros, serviceInfo.service, serviceInfo.speed);
+        console.log(`Sending speed ${serviceInfo.speed} to ${wheel} wheel using service ${serviceInfo.service}`);
+    });
 }
-
 
 ////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
 const { scheduleJob } = require('node-schedule');
-
-// Define a list to store scheduled dates and times
 let scheduledCleanings = [];
 
-
-// Function to start cleaning
 function startCleaning(scheduledCleaningIndex) {
     console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
-    // Define the ROS service call details
     const startCleaningCall = {
-      op: 'call_service',
-      service: '/start_cleaning_service', // Replace with your actual service name
-      args: {} // Replace with actual service arguments if needed
+        op: 'call_service',
+        service: '/start_cleaning_service',
+        args: {}
     };
-
-    // Log the service call message
-    console.log('Service call message:', startCleaningCall);
-
-    // Send the service call message to the WebSocket
-    ws9090.send(JSON.stringify(startCleaningCall));
-	
-    // Remove the scheduled cleaning from the list
+    ws.send(JSON.stringify(startCleaningCall));
     scheduledCleanings.splice(scheduledCleaningIndex, 1);
-    
-    // Broadcast the updated list of scheduled cleanings to WebSocket clients
     broadcastScheduledCleanings();
-    
-
 }
 
-// Function to send the current list of scheduled cleanings to a WebSocket client
 function sendScheduledCleanings(ws) {
     const message = JSON.stringify({ op: 'update_scheduled_cleanings', scheduledCleanings });
     if (ws.readyState === WebSocket.OPEN) {
@@ -254,29 +225,18 @@ function sendScheduledCleanings(ws) {
 
 function addScheduledCleaning(date, time) {
     scheduledCleanings.push({ date, time });
-
-    // Sort the scheduled cleanings by date and time
-    scheduledCleanings.sort((a, b) => {
-        const dateA = new Date(`${a.date}T${a.time}`);
-        const dateB = new Date(`${b.date}T${b.time}`);
-        return dateA - dateB;
-    });
-
-    // Send the updated list of scheduled cleanings to WebSocket clients
+    scheduledCleanings.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
     broadcastScheduledCleanings();
 }
 
-// Function to broadcast the list of scheduled cleanings to WebSocket clients
 function broadcastScheduledCleanings() {
     const message = JSON.stringify({ op: 'update_scheduled_cleanings', scheduledCleanings });
-    wss.clients.forEach((client) => {
+    wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(message);
         }
     });
 }
-
-
 
 // Function to check scheduled cleanings
 function checkScheduledCleanings() {
@@ -309,13 +269,5 @@ function checkScheduledCleanings() {
     });
 }
 
-// Schedule periodic checking of scheduled cleanings
-setInterval(checkScheduledCleanings, 10000); // Check every 10 seconds
-
-
-
+setInterval(checkScheduledCleanings, 10000);
 ////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
-
-
-
-

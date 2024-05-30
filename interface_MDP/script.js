@@ -4,8 +4,8 @@ var ws = new WebSocket('ws://localhost:8080');
 // Log a message when the WebSocket connection is opened
 ws.onopen = function() {
     console.log('WebSocket connected');
+    showNotification('Robot is connected!');
 };
-
 
 //////////////////////////////////Manual control//////////////////////////////////////
 
@@ -79,7 +79,6 @@ document.addEventListener("DOMContentLoaded", function() {
         // Toggle the enabled state of the joystick icon and the arrow buttons
         const isManual = manualBtn.classList.contains('active');
         if (!isManual) {
-        
             updateRobotStatus(1, 'manual');
             // Enable manual control
             manualBtn.classList.add('active');
@@ -100,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-
+//////////////////////////////////Manual control//////////////////////////////////////
 
 /////////////////////////////////////NOTIFICATIONS//////////////////////////////////
 // Function to display a notification in the banner
@@ -115,12 +114,7 @@ function showNotification(message) {
     }, 5000); // 5000 milliseconds = 5 seconds
 }
 
-// Example usage: 
-showNotification('Robot is connected!');
-
 /////////////////////////////////////NOTIFICATIONS//////////////////////////////////
-
-
 
 
 ///////////////////////////////////STATUS//////////////////////////////////
@@ -131,13 +125,6 @@ function updateRobotStatus(robotId, status) {
     robotStatusElement.innerHTML = `Status: ${status} ${getStatusIcon(status)}`;
     addStatusUpdate(robotId, status);
 }
-
-
-// Example usage:
-updateRobotStatus(1, 'waiting for commands');
-updateRobotStatus(2, 'waiting for commands');
-updateRobotStatus(3, 'waiting for commands');
-
 
 // Function to get the status icon based on the status text
 function getStatusIcon(status) {
@@ -158,6 +145,7 @@ function getStatusIcon(status) {
 
     return `<i class="fas ${iconClass}"></i>`;
 }
+
 
 
 
@@ -188,7 +176,6 @@ function addStatusUpdate(robotId, status) {
     }
 }
 
-
 // Event listener for the "Yep" button in the modal to clear the status log
 document.getElementById('confirmClearStatusLog').addEventListener('click', function() {
     // Clear the status log
@@ -197,8 +184,13 @@ document.getElementById('confirmClearStatusLog').addEventListener('click', funct
     $('#clearStatusModal').modal('hide');
 });
 
+// Initial status update
+updateRobotStatus(1, 'waiting for commands');
+updateRobotStatus(2, 'waiting for commands');
+updateRobotStatus(3, 'waiting for commands');
+///////////////////////////////////STATUS//////////////////////////////////
 
-//////////////////////////////////STATUS///////////////////////////////////////////
+
 
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
 // WebSocket connection for handling scheduled cleaning updates
@@ -209,13 +201,17 @@ ws.onmessage = function(event) {
         const scheduledCleanings = message.scheduledCleanings;
         updateScheduledCleaningsList(scheduledCleanings);
     }
+    // Handle battery percentage updates
+    else if (message.op === 'battery_percentage') {
+        const percentage = message.percentage;
+        document.getElementById('batteryPercentage').textContent = percentage + '%';
+    }
     
-     // Handle battery percentage updates
-    else if (message.op == 'battery_percentage') {
-        const percentage = message.msg.percentage;
-        document.getElementById('batteryPercentage').textContent = percentage.toFixed(2) + '%';
+    else if (message.topic === '/map') {
+        drawMap(message.msg);
     }
 };
+
 
 // Function to update the list of scheduled cleanings in the HTML
 function updateScheduledCleaningsList(scheduledCleanings) {
@@ -229,7 +225,6 @@ function updateScheduledCleaningsList(scheduledCleanings) {
         scheduledCleaningsList.appendChild(listItem);
     });
 }
-
 
 // Function to handle form submission for scheduling cleaning session
 function handleFormSubmission(event) {
@@ -263,64 +258,56 @@ document.getElementById('confirmClearScheduledCleanings').addEventListener('clic
     // Hide the modal
     $('#clearScheduledCleaningsModal').modal('hide');
 });
+/////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
 
 
-//////////////////////////////SCHEDULE CLEANING////////////////////////////////////////
+
+//////////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
 
-////////////////////////////////MAPPING////////////////////////////////////////////
-// Establish WebSocket connection with the ROSBridge server
-var ws9090 = new WebSocket('ws://localhost:9090');
-
-document.getElementById('confirmStartMapping').addEventListener('click', function () {
-    // Close the modal
+document.getElementById('confirmStartMapping').onclick = () => {
+    ws.send(JSON.stringify({ command: 'startMapping' }));
     $('#startMappingModal').modal('hide');
-
-    // Call the ROS service to start mapping
-    startMapping();
-    
     updateRobotStatus(1, 'mapping');
-});
+};
 
-function startMapping() {
-    // Log to confirm the function is called
-    console.log('Attempting to start mapping...');
 
-    // Define the ROS service call details
-    const startMappingCall = {
-      op: 'call_service',
-      service: '/start_mapping_service', // Replace with your actual service name
-      args: {} // Replace with actual service arguments if needed
-    };
+function drawMap(mapData) {
+    const canvas = document.getElementById('map');
+    const ctx = canvas.getContext('2d');
+    const width = mapData.info.width;
+    const height = mapData.info.height;
+    const data = mapData.data;
 
-    // Log the service call message
-    console.log('Service call message:', startMappingCall);
+    const imgData = ctx.createImageData(width, height);
+    for (let i = 0; i < data.length; i++) {
+        const value = data[i];
+        const color = value === -1 ? 128 : value === 100 ? 0 : 255;
+        const index = i * 4;
+        imgData.data[index] = color;
+        imgData.data[index + 1] = color;
+        imgData.data[index + 2] = color;
+        imgData.data[index + 3] = 255; // alpha channel
+    }
 
-    // Send the service call message to the WebSocket
-    ws9090.send(JSON.stringify(startMappingCall));
+    ctx.putImageData(imgData, 0, 0);
 }
 
 
+
+// Function to return to the charging station
+function returnToChargingStation() {
+    console.log('Returning to charging station.');
+    updateRobotStatus(1, 'returning to charging station');
+    ws.send(JSON.stringify({ op: 'call_service', command: 'return_to_charging_station' }));
+}
 
 // Add event listener to the stop mapping button
 document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
-    // Call the function to return to the cleaning station
-    returnToChargingStation();
-    // Hide the modal
     $('#stopMappingModal').modal('hide');
+    returnToChargingStation();
 });
-
-////////////////////////////////MAPPING////////////////////////////////////////////
-
-
-////////////////////////////////RETURN TO CHARGING STATION//////////////////////////
-// Function to return to cleaning station
-function returnToChargingStation() {
-    // Call service or perform necessary actions to return to cleaning station
-    console.log('Returning to charging station.');
-    updateRobotStatus(1, 'returning to charging station');
-}
-////////////////////////////////RETURN TO CHARGING STATION//////////////////////////
+//////////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
 
 
