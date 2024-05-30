@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+import rospy
+from object_detector import CombineImages
+
+if __name__ == '__main__':
+    node_name = 'object_detector_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = CombineImages()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()
+
