@@ -8,13 +8,22 @@ class AutoPoweroff:
         self.battery_state: float = 0.0
         self.sub_battery = rospy.Subscriber('/mirte/power/power_watcher', BatteryState, self.battery_callback)
         self.write_path = '/home/mirte/power_check.txt'
+        self.last_push = time.time() - 300
 
     def battery_callback(self, data: BatteryState):
         ti = str(int(time.time()))
-        if data.percentage > 0.20:
+        if data.percentage > 0.30:
             with open(self.write_path, 'w') as f:
                 f.write(ti)
                 f.close()
+            if time.time() - self.last_push > 300:
+                subprocess.run(['wall', "Power level at %02d" % data.percentage*100])
+                self.last_push = time.time()
+        elif data.percentage > 0.20:
+            with open(self.write_path, 'w') as f:
+                f.write(ti)
+                f.close()
+            subprocess.run(['wall', "The robot will turn off soon. Power level at %02d" % data.percentage*100])
         else:
             rospy.logerr("Power too low. Auto poweroff now")
             subprocess.run(['sudo', 'poweroff', 'now'], check=True)
