@@ -9,8 +9,10 @@ from std_msgs.msg import Header
 from sensor_msgs.msg import Image
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import PoseWithCovarianceStamped
 import numpy as np
 from enum import Enum
+import math
 
 '''
 std_msgs/Header header
@@ -31,18 +33,18 @@ class State(Enum):
 
 
 class feces:
-    def __init__(self, uuid, location) -> None:
+    def __init__(self, uuid, abs_location) -> None:
         self.uuid = uuid
-        self.x = location[0]
-        self.y = location[1]
+        self.abs_x = abs_location[0]
+        self.abs_y = abs_location[1]
         self.state = State.INACTIVE
         self.continuous_detection_count = 0
         self.continuous_no_detection_count = 0
         self.detected_this_frame = True
         self.rho = 0.5
 
-    def update(self, location):
-        if location == None:
+    def update(self, abs_location):
+        if abs_location == None:
             self.continuous_detection_count = 0
             self.continuous_no_detection_count += 1
 
@@ -53,8 +55,8 @@ class feces:
                 self.state = State.NOT_IN_SPOT
 
         else:
-            self.x = self.rho*self.x + (1-self.rho)*location[0]
-            self.y = self.rho*self.y + (1-self.rho)*location[1]
+            self.abs_x = self.rho*self.abs_x + (1-self.rho)*abs_location[0]
+            self.abs_y = self.rho*self.abs_y + (1-self.rho)*abs_location[1]
             self.continuous_no_detection_count = 0
             self.continuous_detection_count += 1
 
@@ -73,13 +75,19 @@ class object_localization:
         self.camera_info = None
         self.feces_list = []
         self.next_id = 0
+        # robot x,y,yaw
+        self.x = None
+        self.y = None
+        self.yaw = None
 
-        rospy.init_node('object_localization', anonymous=True)
+        rospy.init_node('tracker', anonymous=True)
 
         #self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
         self.camera_detection_sub = rospy.Subscriber('/object_detector/detections', Detection, self.detection_cb)
         
         self.camera_info_sub = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.camera_info_cb)
+
+        self.amcl_pose_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_sub)
         
         self.feces_pub = rospy.Publisher('/tracker/feces_locations', ObjectLocationArray, queue_size=10)
 
@@ -97,8 +105,20 @@ class object_localization:
         self.camera_info_sub.unregister()
 
 
+    def amcl_pose_cb(self, amcl_pose_msg):
+        self.x = amcl_pose_msg.pose.pose.position.x
+        self.y = amcl_pose_msg.pose.pose.position.y
+
+        qx = amcl_pose_msg.pose.pose.orientation.x
+        qy = amcl_pose_msg.pose.pose.orientation.y
+        qz = amcl_pose_msg.pose.pose.orientation.z
+        qw = amcl_pose_msg.pose.pose.orientation.w
+
+        self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
+
+
     def detection_cb(self, detection_msg):
-        if self.camera_info is None:
+        if (self.camera_info is None) or (self.x is None):
             return
         
         bboxes = detection_msg.bboxes
@@ -109,11 +129,10 @@ class object_localization:
         depth_img = np.frombuffer(detection_msg.depth_img.data, dtype=np.uint16).reshape(detection_msg.depth_img.height, detection_msg.depth_img.width)
         depth_img = depth_img.astype(np.float32) / 1000
 
-        self.feces_relative_locations = []
+        self.feces_absolute_locations = []
         
         #for bbox_, class_, detection_score_ in zip(bboxes, classes, detection_score):
         for bbox_ in bboxes:
-            rospy.loginfo(f'fsfsf')
             # if detection_score_ < 0.5:
             #     rospy.loginfo('Low confidence detection!')
             #     continue    # ignore low confidence detection
@@ -145,16 +164,19 @@ class object_localization:
                     Z = k
 
                 Z += 0.04   # convert to LiDAR frame
-                rospy.loginfo(f'Feces detected at ({X}, {Z})')
-                self.feces_relative_locations.append([X, Z])
+                
+                abs_x = self.x + math.cos(self.yaw)*Z + math.sin(self.yaw)*X
+                abs_y = self.y + math.cos(self.yaw)*X + math.sin(self.yaw)*Z
 
-        # TODO: transform the relative location to the global location
-        self.update_feces_list(self.feces_relative_locations)
+                self.feces_absolute_locations.append([abs_x, abs_y])
+                rospy.loginfo(f'Feces detected at ({abs_x}, {abs_y})')
+
+        self.update_feces_list(self.feces_absolute_locations)
 
         rospy.loginfo('Feces list:')
         for feces_ in self.feces_list:
             if feces_.state != State.DIED:
-                rospy.loginfo(f'Feces {feces_.uuid}: ({feces_.x}, {feces_.y}), state: {feces_.state}')
+                rospy.loginfo(f'Feces {feces_.uuid}: ({feces_.abs_x}, {feces_.abs_y}), state: {feces_.state}')
 
         feces_location_array_msg = ObjectLocationArray()
         feces_location_array_msg.header = detection_msg.header
@@ -165,9 +187,8 @@ class object_localization:
                 feces_location_msg = ObjectLocation()
 
                 feces_location_msg.uuid = feces_.uuid
-                feces_location_msg.rel_location.x = feces_.x
-                feces_location_msg.rel_location.y = feces_.y
-                feces_location_msg.abs_location = feces_location_msg.rel_location   # TODO
+                feces_location_msg.abs_location.x = feces_.abs_x
+                feces_location_msg.abs_location.y = feces_.abs_y
                 if feces_.state == State.ACTIVE:
                     feces_location_msg.in_view = True
                 elif feces_.state == State.NOT_IN_SPOT:
@@ -179,26 +200,26 @@ class object_localization:
         self.feces_pub.publish(feces_location_array_msg)
 
 
-    def update_feces_list(self, feces_locations):
+    def update_feces_list(self, absolute_locations):
         for feces_ in self.feces_list:
             feces_.detected_this_frame = False
 
-        for feces_location in feces_locations:
+        for absolute_location in absolute_locations:
             min_dist = 1000
             min_dist_idx = -1
             for i, feces_ in enumerate(self.feces_list):
                 if feces_.state == State.DIED or feces_.detected_this_frame:
                     continue
-                dist = np.linalg.norm(np.array(feces_location) - np.array([feces_.x, feces_.y]))
+                dist = np.linalg.norm(np.array(absolute_location) - np.array([feces_.abs_x, feces_.abs_y]))
                 if dist < min_dist:
                     min_dist = dist
                     min_dist_idx = i
 
-            if min_dist < 0.1:
-                self.feces_list[min_dist_idx].update(feces_location)
+            if min_dist < 0.2:
+                self.feces_list[min_dist_idx].update(absolute_location)
                 self.feces_list[min_dist_idx].detected_this_frame = True
             else:
-                self.feces_list.append(feces(self.next_id, feces_location))
+                self.feces_list.append(feces(self.next_id, absolute_location))
                 self.next_id += 1
 
         for feces_ in self.feces_list:
@@ -207,7 +228,5 @@ class object_localization:
 
 
 
-            
-            
 if __name__ == '__main__':
     object_localization()
