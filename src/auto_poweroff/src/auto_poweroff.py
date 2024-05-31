@@ -12,21 +12,22 @@ class AutoPoweroff:
 
     def battery_callback(self, data: BatteryState):
         ti = str(int(time.time()))
+        power_level = str(data.percentage*100)
         if data.percentage > 0.30:
             with open(self.write_path, 'w') as f:
                 f.write(ti)
                 f.close()
             if time.time() - self.last_push > 300:
-                subprocess.run(['wall', "Power level at %02d" % data.percentage*100])
+                subprocess.run(['wall', "Power level at " + power_level])
                 self.last_push = time.time()
         elif data.percentage > 0.20:
             with open(self.write_path, 'w') as f:
                 f.write(ti)
                 f.close()
-            subprocess.run(['wall', "The robot will turn off soon. Power level at %02d" % data.percentage*100])
+            subprocess.run(['wall', "The robot will turn off soon. Power level at " + power_level])
         else:
             rospy.logerr("Power too low. Auto poweroff now")
-            subprocess.run(['sudo', 'poweroff', 'now'], check=True)
+            subprocess.run(['sudo', 'poweroff'], check=True)
         return
 
 
