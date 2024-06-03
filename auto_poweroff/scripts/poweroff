@@ -1,0 +1,17 @@
+import rospy
+from auto_poweroff import AutoPoweroff
+
+"""
+Script to run the auto_poweroff_node that monitors battery percentage.
+Every 5 minutes, it sends a wall message informing user about the battery percentage.
+If battery is below 30%, it will warn the user to charge the robot.
+If the battery is below 20%, it will turn of the robot.
+"""
+
+if __name__ == '__main__':
+    node_name = 'auto_poweroff_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = AutoPoweroff()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()
