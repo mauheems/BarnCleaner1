@@ -41,7 +41,7 @@ server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 
-//////////////////////////////ROSLIB////////////////////////////////////
+//////////////////////////////ROSLIB/////////////////////////////////////////////////
 const ros = new ROSLIB.Ros({
   url: 'ws://localhost:9090' // Replace <robot_ip> with the actual IP address of the robot
 });
@@ -57,6 +57,8 @@ ros.on('error', (error) => {
 ros.on('close', () => {
   console.log('Connection to websocket server closed.');
 });
+//////////////////////////////ROSLIB///////////////////////////////////////////
+
 
 ////////////////////////////WEBSOCKET CONNECTION////////////////////////////////////
 const wss = new WebSocket.Server({ server });
@@ -94,7 +96,9 @@ wss.on('connection', ws => {
             mapTopic.subscribe(message => {
                 ws.send(JSON.stringify({ topic: '/map', msg: message }));
             });
-    	}       
+    	}  else if (parsedMessage.command === 'startCleaning') {
+    		startCleaning();
+    	}     
     });
 
     
@@ -204,16 +208,29 @@ function controlRobot(command) {
 const { scheduleJob } = require('node-schedule');
 let scheduledCleanings = [];
 
-function startCleaning(scheduledCleaningIndex) {
-    console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
-    const startCleaningCall = {
-        op: 'call_service',
-        service: '/start_cleaning_service',
-        args: {}
-    };
-    ws.send(JSON.stringify(startCleaningCall));
-    scheduledCleanings.splice(scheduledCleaningIndex, 1);
-    broadcastScheduledCleanings();
+function startCleaning(scheduledCleaningIndex = null) {
+    if (scheduledCleaningIndex !== null) {
+        console.log('Starting cleaning for:', scheduledCleanings[scheduledCleaningIndex]);
+        scheduledCleanings.splice(scheduledCleaningIndex, 1);
+        broadcastScheduledCleanings();
+    } else {
+        console.log('Starting immediate cleaning.');
+    }
+
+    // Define the ROSLIB topic for starting the cleaning
+    const cleaningTopic = new ROSLIB.Topic({
+        ros: ros,
+        name: '/start_cleaning', // Adjust the topic name if necessary
+        messageType: 'std_msgs/Empty' // Adjust the message type if necessary
+    });
+
+    // Create an empty message
+    const emptyMessage = new ROSLIB.Message({});
+
+    // Publish the message to start the cleaning
+    cleaningTopic.publish(emptyMessage);
+    
+    console.log('Cleaning session started.');
 }
 
 function sendScheduledCleanings(ws) {

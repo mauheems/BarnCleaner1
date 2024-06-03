@@ -258,11 +258,18 @@ document.getElementById('confirmClearScheduledCleanings').addEventListener('clic
     // Hide the modal
     $('#clearScheduledCleaningsModal').modal('hide');
 });
+
+document.getElementById('startCleaningButton').addEventListener('click', () => {
+        ws.send(JSON.stringify({ command: 'startCleaning'}));
+        updateRobotStatus(1, 'cleaning');
+        updateRobotStatus(2, 'cleaning');
+        updateRobotStatus(3, 'cleaning');
+});
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
 
 
 
-//////////////////////////////////////////////MAPPING/////////////////////////////////////////////////
+/////////////////////////////////////////MAPPING////////////////////////////////////////////////
 
 
 document.getElementById('confirmStartMapping').onclick = () => {
@@ -307,7 +314,7 @@ document.getElementById('confirmStopMappingBtn').addEventListener('click', funct
     $('#stopMappingModal').modal('hide');
     returnToChargingStation();
 });
-//////////////////////////////////////////////MAPPING/////////////////////////////////////////////////
+/////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
 
 

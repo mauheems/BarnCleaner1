@@ -1,13 +1,16 @@
 <!-- DONE:
-- make manual control buttons nicer
-- change order status log
-- make sure schedule is chronological
+
 -->
 
 <!-- TO DO:
 - add popups for manual control initiation -> terminate cleaning session.
-- add clear schedule button per schedule
 - make sure startcleaning function updates status
+- make schedule cleanng tab prettier -> one button style
+- make map into 1 column mapping tab
+- link progress bar to right topics
+- link startCleaning function to right topics
+- test map and link map to right topic
+- location during mapping 
 -->
 
 
@@ -386,6 +389,8 @@
             
             <!-- Cleaning Session Tab Content -->
             <div class="tab-pane fade" id="cleaning-session" role="tabpanel" aria-labelledby="cleaning-session-tab">
+            
+            <button id="startCleaningButton" class="btn btn-success" >Start Cleaning Now!</button>
                 <!-- Content for Cleaning Session tab goes here -->
                 <!-- Schedule Cleaning Session form -->
                 <div class="row">
@@ -407,7 +412,7 @@
                     <div class="col-md-6">
                         <!-- List of Scheduled Cleanings -->
                         <div>
-                            <h3>Scheduled Cleanings</h3>
+                            <h3>Scheduled Cleaning Sessions</h3>
                             <ul id="scheduledCleaningsList"></ul>
                             <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#clearScheduledCleaningsModal">
 			  Clear Scheduled Cleanings Log
@@ -656,6 +661,14 @@
   </div>
 </div>
 
+<div class="progress-wrapper">
+  <span class="progress-label">Cleaning progress:</span>
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
+      <span class="progress-value">poops scooped/poops</span>
+    </div>
+  </div>
+</div>
 
 
 
