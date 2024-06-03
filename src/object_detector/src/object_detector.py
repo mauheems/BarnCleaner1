@@ -6,6 +6,9 @@ from custom_msgs.msg import Detection
 from model_class import MLModel
 
 class CombineImages(object):
+    """
+    Class to sync depth and rgb images (with predictions) and publish them as a single message for the tracking class
+    """
     def __init__(self):
         self.rgb_image = None
         self.depth_image = None
@@ -21,6 +24,10 @@ class CombineImages(object):
         self.ml_model.load_model()
 
     def rgb_callback(self, msg: Image):
+        """
+        Callback for RGB images. Run inference on this image and obtain bounding box annotations. 
+        Check if depth image has also been updated and publish the message.
+        """
         self.rgb_image = msg
         self.rgb_header = msg.header.stamp.nsecs
 
@@ -44,7 +51,10 @@ class CombineImages(object):
         return
 
     def depth_callback(self, msg: Image):
-        # print("Depth callback")
+        """
+        Save depth image to class variable. 
+        Sync depth images with rgb images by keeping the depth image with the closest RGB image wrt header timestamp.
+        """
         if self.rgb_header and self.depth_header:
             # print("if_true_depth")
             current_delta = abs(self.rgb_header - self.rgb_header)
