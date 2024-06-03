@@ -76,9 +76,12 @@ class object_localization:
         self.feces_list = []
         self.next_id = 0
         # robot x,y,yaw
-        self.x = None
-        self.y = None
-        self.yaw = None
+        # self.x = None
+        # self.y = None
+        # self.yaw = None
+        self.x = 0
+        self.y = 0
+        self.yaw = 0
 
         rospy.init_node('tracker', anonymous=True)
 
@@ -87,7 +90,7 @@ class object_localization:
         
         self.camera_info_sub = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.camera_info_cb)
 
-        self.amcl_pose_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_sub)
+        self.amcl_pose_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_cb)
         
         self.feces_pub = rospy.Publisher('/tracker/feces_locations', ObjectLocationArray, queue_size=10)
 
