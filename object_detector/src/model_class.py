@@ -15,11 +15,12 @@ class MLModel(object):
 
     def load_model(self):
         base_options = python.BaseOptions(model_asset_path=self.model_path)
-        options = vision.ObjectDetectorOptions(base_options=base_options,
-                                               running_mode=vision.RunningMode.VIDEO,
-                                               score_threshold=0.5)
+        options = vision.ObjectDetectorOptions(
+            base_options=base_options,
+            running_mode=vision.RunningMode.VIDEO,
+            score_threshold=0.5,
+        )
         self.detector = vision.ObjectDetector.create_from_options(options)
-
 
     @staticmethod
     def visualize_callback(result: vision.ObjectDetectorResult):

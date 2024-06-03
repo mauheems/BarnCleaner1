@@ -5,6 +5,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from custom_msgs.msg import Detection
 from model_class import MLModel
 
+
 class CombineImages(object):
     def __init__(self):
         self.rgb_image = None
@@ -13,11 +14,15 @@ class CombineImages(object):
         self.depth_header = None
 
         self.bridge = CvBridge()
-        rospy.Subscriber('/camera/color/image_raw', Image, self.rgb_callback)
-        rospy.Subscriber('/camera/depth/image_raw', Image, self.depth_callback)
-        self.detections_pub = rospy.Publisher('/object_detector/detections', Detection, queue_size=1)
+        rospy.Subscriber("/camera/color/image_raw", Image, self.rgb_callback)
+        rospy.Subscriber("/camera/depth/image_raw", Image, self.depth_callback)
+        self.detections_pub = rospy.Publisher(
+            "/object_detector/detections", Detection, queue_size=1
+        )
 
-        self.ml_model = MLModel('src/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite')
+        self.ml_model = MLModel(
+            "src/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite"
+        )
         self.ml_model.load_model()
 
     def rgb_callback(self, msg: Image):
@@ -31,7 +36,12 @@ class CombineImages(object):
         bboxes = self.ml_model.inference(cv2_img, msg.header.seq)
 
         if self.depth_header:
-            print("Headers: ", self.rgb_header, self.depth_header, self.rgb_header - self.depth_header)
+            print(
+                "Headers: ",
+                self.rgb_header,
+                self.depth_header,
+                self.rgb_header - self.depth_header,
+            )
             detection = Detection()
             detection.header = msg.header
             detection.source_img = self.rgb_image
