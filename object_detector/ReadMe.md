@@ -1,6 +1,7 @@
 # Object Detector
 
 Detect faeces in images and provides detections as a list of bounding box images.
+
 Subscribes to RGB and Depth image topics published in the Mirte and publishes Detections (custom_msgs package) which contain the source images and list of bounding box detections
 
 
