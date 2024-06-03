@@ -2,7 +2,6 @@
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
     <!-- <param name="base_frame" value="base_link"/> -->
     <!-- <param name="scan" value="/scan"/> -->
-
     <param name="base_frame" value="map"/>
     <param name="odom_frame" value="odom"/>
     <param name="map_frame" value="map"/>
@@ -10,10 +9,4 @@
 
     <param name="map_update_interval" value="0.1"/>
   </node>
-
-
-  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/mirte/maps/my_map"/>
-
-
-
 </launch>

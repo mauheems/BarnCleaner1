@@ -5,10 +5,5 @@ local_costmap:
   publish_frequency: 1.0
   transform_tolerance: 0.2
   resolution: 0.1
-  static_map: false
+  static_map: False
   rolling_window: true
-  width: 10.0
-  height: -10.0
-
-  origin_x: 0.0
-  origin_y: 0.0

@@ -5,9 +5,4 @@ global_costmap:
   publish_frequency: 0.5
   transform_tolerance: 0.2
   resolution: 0.1
-  static_map: true
-  width: 10.0  # for now
-  height: -10.0  # for now
-  
-  origin_x: 0.0
-  origin_y: 0.0
+  static_map: True
