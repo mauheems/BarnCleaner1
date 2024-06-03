@@ -25,7 +25,7 @@ class CombineImages(object):
         )
 
         self.ml_model = MLModel(
-            "src/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite"
+            "src/group18/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite"
         )
         self.ml_model.load_model()
 
