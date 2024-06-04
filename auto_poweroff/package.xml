@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>object_detector</name>
+  <name>auto_poweroff</name>
   <version>0.0.0</version>
-  <description>The object_detector package</description>
+  <description>The auto_poweroff package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/object_detector</url> -->
+  <!-- <url type="website">http://wiki.ros.org/auto_poweroff</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -33,16 +33,6 @@
   <!-- Examples: -->
   <!-- Use depend as a shortcut for packages that are both build and exec dependencies -->
   <!--   <depend>roscpp</depend> -->
-     <depend>rospy</depend>
-     <depend>std_msgs</depend>
-     <depend>custom_msgs</depend>
-     <depend>geometry_msgs</depend>
-     <depend>vision_msgs</depend>
-     <depend>tf</depend>
-     <depend>sensor_msgs</depend>
-     <depend>cv_bridge</depend>
-     <depend>python3-opencv</depend>
-     <depend>python-numpy</depend>
   <!--   Note that this is equivalent to the following: -->
   <!--   <build_depend>roscpp</build_depend> -->
   <!--   <exec_depend>roscpp</exec_depend> -->
@@ -59,6 +49,8 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
