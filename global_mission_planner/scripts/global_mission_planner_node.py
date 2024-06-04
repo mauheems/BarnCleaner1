@@ -2,8 +2,7 @@
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseArray
-from geometry_msgs.msg import Pose
-from tf.transforms import euler_from_quaternion
+from tf.transformations import euler_from_quaternion
 
 class GlobalMissionPlanner:
     def __init__(self):
@@ -11,8 +10,6 @@ class GlobalMissionPlanner:
 
         # Subscriber for the map
         self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
-
-        self.robot_amount = int(1)
 
         # Service for the waypoints
         self.waypoints_service = rospy.Service('global_mission/waypoints', PoseArray, self.waypoints_callback)
@@ -28,48 +25,56 @@ class GlobalMissionPlanner:
         self.divide_map_and_generate_waypoints()
 
     def divide_map_and_generate_waypoints(self):
-        # Get the map dimensions
-        map_width = self.map_data.info.width
-        map_height = self.map_data.info.height
+        # Check if the map data is available
+        if self.map_data is None:
+            rospy.logwarn("Map data is not available")
+            return
 
-        # Calculate the width of each strip
-        strip_width = map_width // self.robot_amount
+        # Get the dimensions of the map
+        width = self.map_data.info.width
+        height = self.map_data.info.height
 
-        # Initialize the waypoints list
-        waypoints = []
+        # Calculate the size of each partition
+        partition_width = width // 3
+        partition_height = height
 
-        # Generate waypoints for each robot
-        for i in range(self.robot_amount):
-            # Calculate the strip boundaries
-            strip_start = i * strip_width
-            strip_end = (i + 1) * strip_width if i < self.robot_amount - 1 else map_width
+        # Generate waypoints for each partition
+        for i in range(3):
+            # Calculate the starting and ending indices for the partition
+            start_index = i * partition_width
+            end_index = (i + 1) * partition_width
 
-            # Initialize the waypoints for this robot
-            robot_waypoints = []
+            # Create a new PoseArray for the waypoints
+            waypoints = PoseArray()
 
-            # Generate waypoints in a zigzag pattern
-            for y in range(map_height):
-                if y % 2 == 0:  # Even rows go from left to right
-                    x_range = range(strip_start, strip_end)
-                else:  # Odd rows go from right to left
-                    x_range = range(strip_end - 1, strip_start - 1, -1)
+            # Determine the direction of the snake pattern
+            if i % 2 == 0:
+                # Snake pattern from left to right
+                x_range = range(start_index, end_index)
+            else:
+                # Snake pattern from right to left
+                x_range = range(end_index - 1, start_index - 1, -1)
 
+            # Iterate over the map data within the partition
+            for y in range(partition_height):
                 for x in x_range:
-                    # Create a waypoint at (x, y) and add it to the list
+                    # TODO: Generate waypoints based on the map data at (x, y)
+
+                    # Example: Create a waypoint at (x, y)
                     waypoint = Pose()
                     waypoint.position.x = x
                     waypoint.position.y = y
-                    robot_waypoints.append(waypoint)
+                    waypoints.poses.append(waypoint)
 
-            # Add the waypoints for this robot to the main list
-            waypoints.append(robot_waypoints)
+            # Publish the waypoints for the current partition
+            self.publish_waypoints(waypoints)
 
-        return waypoints
-
-    def waypoints_callback(self, request):
-        # TODO: Implement the logic to return the waypoints for each robot
-
-        return PoseArray()  # Placeholder
+    def publish_waypoints(self, waypoints):
+        # TODO: Publish the waypoints for the current partition
+        # Create a publisher for the waypoints
+        waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
+        # Publish the waypoints
+        waypoints_pub.publish(waypoints)
 
 if __name__ == '__main__':
     try:
@@ -77,3 +82,5 @@ if __name__ == '__main__':
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
+
+    
