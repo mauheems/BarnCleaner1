@@ -42,17 +42,25 @@ class MissionPlanner:
     
     @staticmethod
     def point_to_array(point: Point):
-        
-        return
+        arr = np.array([point.x, point.y, point.z])
+        return arr
     
     def distance_calc(point):
         return
 
     def obj_track_callback(self, data: ObjectLocationArray):
         d = ObjectLocation()
-        d.abs_location
-        d_arr = self.pose_array_to_path([d.abs_location])
-        diff = self.path_numpy - d.abs_location
+        d_arr = self.point_to_array(d.abs_location)
+        diff = self.path_numpy - d_arr
+        dist = np.linalg.norm(diff, ord=2, axis=1)
+        min_ind = np.argmin(dist)
+        if min_ind == 0:
+            insert_ind = 1
+        elif min_ind == len(diff) - 1:
+            insert_ind = min_ind - 1
+        else:
+            next_ind = min_ind + 1 if dist[min_ind + 1] < dist[min_ind - 1] else min_ind - 1
+        self.path_numpy = None
         return
 
     def own_location_callback(self, data: PoseWithCovarianceStamped):
