@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="object_detector" name="object_detector_node" type="run_object_detector" output="screen" respawn="true"/> 
+    <node pkg="tracking" name="tracker" type="object_localization.py" output="screen" respawn="true"/>
+    <group if="$(optenv DEBUG 0)">
+        <node pkg="object_detector" name="custom_msg_node" type="custom_msg_util" output="screen" respawn="true"/> 
+    </group>
+</launch>
