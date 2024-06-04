@@ -43,7 +43,7 @@ class MLModel(object):
             bbox_list.append(bbox)
         return bbox_list
 
-    def inference(self, cv2_img: cv2.UMat, sequence: int):
+    def inference(self, cv2_img, sequence: int):
         """
         Run inference on the received image and return list of bounding box detections.
         Sequence is used to ensure only subsequent frames are process and therefore should monotonically increase.
