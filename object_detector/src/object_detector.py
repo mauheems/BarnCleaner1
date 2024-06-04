@@ -54,7 +54,7 @@ class CombineImages(object):
             detection = Detection()
             detection.header = msg.header
             detection.source_img = self.rgb_image
-            detection.depth_img = self.depth_image
+            detection.depth_img = self.depth_image # type: ignore
             detection.bboxes = bboxes
             self.detections_pub.publish(detection)
 
