@@ -104,7 +104,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auto_poweroff
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS sensor_msgs
 #  DEPENDS system_lib
 )
 
