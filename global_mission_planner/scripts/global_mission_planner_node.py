@@ -58,8 +58,6 @@ class GlobalMissionPlanner:
             # Iterate over the map data within the partition
             for y in range(partition_height):
                 for x in x_range:
-                    # TODO: Generate waypoints based on the map data at (x, y)
-
                     # Example: Create a waypoint at (x, y)
                     waypoint = Pose()
                     waypoint.position.x = x
@@ -70,7 +68,6 @@ class GlobalMissionPlanner:
             self.publish_waypoints(waypoints)
 
     def publish_waypoints(self, waypoints):
-        # TODO: Publish the waypoints for the current partition
         # Create a publisher for the waypoints
         waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
         # Publish the waypoints
