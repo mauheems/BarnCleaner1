@@ -18,6 +18,9 @@
     <build_depend>move_base_msgs</build_depend>
     <build_depend>tf</build_depend>
 
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+
     <export>
         <node name="global_mission_planner_node" pkg="global_mission_planner" type="global_mission_planner_node" output="screen"/>
     </export>
