@@ -62,7 +62,7 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>teleop_twist_keyboard</exec_depend>
-  <exec_depend>nacatv_msgs</exec_depend>
+<!--  <exec_depend>nacatv_msgs</exec_depend>-->
   <exec_depend>tf</exec_depend>
   <exec_depend>move_base</exec_depend>
   <exec_depend>amcl</exec_depend>
