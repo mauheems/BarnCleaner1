@@ -11,8 +11,8 @@ class GlobalMissionPlanner:
         # Subscriber for the map
         self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
 
-        # Service for the waypoints
-        self.waypoints_service = rospy.Service('global_mission/waypoints', PoseArray, self.waypoints_callback)
+        # # Service for the waypoints
+        # self.waypoints_service = rospy.Service('global_mission/waypoints', PoseArray, self.waypoints_callback)
 
         # Placeholder for the map
         self.map_data = None
