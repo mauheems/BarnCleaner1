@@ -52,6 +52,15 @@
         .nav-tabs .nav-link.active {
             color: #333; /* Dark gray */
         }
+        
+        .container {
+	    max-width: 2000px; /* Set the maximum width of the page container */
+	    margin: 0 auto; /* Center the container horizontally */
+	    border-radius: 10px; /* Add border radius for rounded corners */
+            padding: 10px; /* Add padding for better readability */
+	    background-color: #f8f9fa; /* Light gray background */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	}
 
         .button-container {
             margin-top: 10px;
@@ -148,6 +157,7 @@
             grid-gap: 20px; /* Gap between columns */
             margin-bottom: 20px; /* Add margin to the bottom of the robot container */
             margin-top: 20px; /* Add margin to the bottom of the robot container */
+            
         }
 
         .robot-box {
@@ -182,11 +192,14 @@
             height: 200px; /* Set a fixed height for the status log container */
             overflow-y: auto; /* Enable vertical scrolling */
             border: 1px solid #ccc; /* Add a border for visual appeal */
-            border-radius: 5px; /* Add border radius for rounded corners */
+            border-radius: 10px; /* Add border radius for rounded corners */
             padding: 10px; /* Add padding for better readability */
             list-style: none; /* Remove bullet points */
             margin-top: 20px; /* Add margin for spacing */
+            background-color: #f8f9fa; /* Light gray background */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
         }
+        
         #clearStatusLogBtn {
 	    position: absolute;
 	    bottom: 10px;
@@ -197,6 +210,7 @@
         .log-container,
         .settings-container {
             padding: 20px;
+            
         }
 
         .robot-box {
@@ -221,11 +235,17 @@
             margin-left: 10px;
         }
         
-        
+        .schedulecleaning-container{
+            background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        }
         
         #scheduleForm {
             display: flex;
             flex-direction: column;
+            
         }
 
         #scheduleForm label {
@@ -260,6 +280,11 @@
 	    padding: 10px; /* Add padding for better readability */
 	    list-style: none; /* Remove bullet points */
 	    margin-top: 20px; /* Add margin for spacing */
+	    background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	    
 	}
 
         #scheduledCleaningsList li {
@@ -319,6 +344,7 @@
 	    padding: 20px; /* Add some padding */
 	    border-radius: 10px; /* Rounded corners */
 	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	    width: 45%
 	}
 
 	/* Style for the heading */
@@ -331,9 +357,46 @@
 	    text-align: left; /* Align text to the left */
 	}
 	
+	#start-cleaning-instructions{
+	    text-align: left; /* Align text to the left */
+	}
+	
 	canvas {
             border: 1px solid black;
         }
+        
+        .instructions-column {
+	    flex: 1;
+	}
+
+	.map-column {
+	    flex: 1;
+	    margin-left: 20px; /* Add spacing between columns */
+	}
+
+	#map {
+	    width: 80%; /* Adjust map size as needed */
+
+	}
+	.mapping-container {
+	    display: flex;
+	    flex-direction: row;
+	    background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	}
+	
+	/* Custom CSS for robot cards */
+	.robot-cards {
+	    display: flex; /* Use flexbox to align items */
+	    justify-content: center; /* Center items horizontally */
+	}
+
+	.robot-card {
+	    margin: 0 40px; /* Adjust margin as needed for space between cards */
+	    width: 22rem; /* Adjust card width as needed */
+	}
     </style>
 </head>
 <body>
@@ -350,7 +413,7 @@
     
     
     <div class="container">
-        <h1>Robot Control</h1>
+        <h1>Mirte Control</h1>
         <div id="notification-banner"></div>
     
     <!-- Tabs -->
@@ -390,13 +453,20 @@
             <!-- Cleaning Session Tab Content -->
             <div class="tab-pane fade" id="cleaning-session" role="tabpanel" aria-labelledby="cleaning-session-tab">
             
-            <button id="startCleaningButton" class="btn btn-success" >Start Cleaning Now!</button>
+            <div class= "schedulecleaning-container">
+            <div id="mapping-instructions">
+            <h2>Getting Started:</h2>
+            <p>To schedule a cleaning session, please fill in the form below and press the 'Schedule cleaning' button. You can clear the scheduled cleanings on the right. To start a cleaning session right away, please press the button on the left! Happy cleaning!</p>
+            <button id="startCleaningButton" class="btn btn-primary btn-square" >Start Cleaning Now!</button>
+            
+            </div>
+            
                 <!-- Content for Cleaning Session tab goes here -->
                 <!-- Schedule Cleaning Session form -->
                 <div class="row">
                     <div class="col-md-6">
                         <div id="scheduleForm">
-                            <h2>Schedule Cleaning Session</h2>
+                            <h3>Schedule Cleaning Session</h3>
                             <form id="scheduleForm">
                                 <label for="scheduleDate">Date:</label>
                                 <input type="date" id="scheduleDate" name="scheduleDate" required>
@@ -404,30 +474,35 @@
                                 <label for="scheduleTime">Time:</label>
                                 <input type="time" id="scheduleTime" name="scheduleTime" required>
                                 <br>
-                                <button type="submit" class="btn btn-outline-info">Schedule Cleaning</button>
-                            </form>
+                                <button type="submit" class="btn btn-primary btn-square">Schedule Cleaning</button>
+                        </form>
+
+                            
                         </div>
                     </div>
                     
                     <div class="col-md-6">
                         <!-- List of Scheduled Cleanings -->
                         <div>
-                            <h3>Scheduled Cleaning Sessions</h3>
+                            <h3>Schedule</h3>
                             <ul id="scheduledCleaningsList"></ul>
                             <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#clearScheduledCleaningsModal">
 			  Clear Scheduled Cleanings Log
 				</button>
                         </div>
+                        
                         <!-- Trigger for clearing scheduled cleanings log -->
-			
+			</div>
                     </div>
+			
                 </div>
             </div>
             
             <!-- Mapping Tab Content -->
             <div class="tab-pane fade" id="mapping" role="tabpanel" aria-labelledby="mapping-tab">
-            
+            <div class="mapping-container">
             <div id="mapping-instructions-container" class="mapping-instructions-container">
+            	<div class="instructions-column">
 		    <div id="mapping-instructions">
 			<h2>Getting Started:</h2>
 			<p>Welcome to the Mapping Tab! Here, you can initiate the mapping process for your robot to create a map of its environment.</p>
@@ -447,6 +522,7 @@
 			<h2>Additional Assistance:</h2>
 			<p>If you encounter any issues or need further assistance, feel free to contact our support team for help.</p>
 		    </div>
+		  </div>
 		    <!-- Trigger Button -->
 		<div class="btn-group" role="group" aria-label="Basic example">
 		   
@@ -456,15 +532,16 @@
 		</div>
 		</div>
 
-
+		<div class="map-column">
 		<h1>Map Visualization</h1>
+		    
 		    <canvas id="map" width="800" height="600"></canvas>
 		    <script src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
 		    <script src="https://cdn.jsdelivr.net/npm/ros2djs/build/ros2d.min.js"></script>	
-
+		</div>
             </div>
         </div>
-    
+    </div>
     
     
 <div class="spacer"></div>    
@@ -474,9 +551,10 @@
     
    
 <!-- Robot parameter boxes -->
-	<div class="row">
+
+	<div class="robot-cards">
 	    <!-- Robot 1 -->
-	    <div class="col-md-4">
+	    <div class="robot-card">
 		<div class="card"  style="width: 22rem;">
 		<img class="card-img" src="/pictures/robot3.png" alt="Card image"  style="width: 22rem;">
 			    <div class="card-body">
@@ -508,7 +586,7 @@
 
 
 		<!-- Robot 2 -->
-	<div class="col-md-4">
+	<div class="robot-card">
 	    <div class="card" style="width: 22rem;">
 	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
 		<div class="card-body">
@@ -540,7 +618,7 @@
 	</div>
 
 	<!-- Robot 3 -->
-	<div class="col-md-4">
+	<div class="robot-card">
 	    <div class="card" style="width: 22rem;">
 	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
 		<div class="card-body">
@@ -571,7 +649,16 @@
 	    </div>
 	</div>
 
+
+        </div>
+    <div class="progress-wrapper">
+  <span class="progress-label">Cleaning progress:</span>
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
+      <span class="progress-value">poops scooped/poops</span>
     </div>
+  </div>
+</div>
 </div>  
 
 
@@ -661,14 +748,7 @@
   </div>
 </div>
 
-<div class="progress-wrapper">
-  <span class="progress-label">Cleaning progress:</span>
-  <div class="progress">
-    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
-      <span class="progress-value">poops scooped/poops</span>
-    </div>
-  </div>
-</div>
+
 
 
 

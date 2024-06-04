@@ -46,7 +46,7 @@ const ros = new ROSLIB.Ros({
   url: 'ws://localhost:9090' // Replace <robot_ip> with the actual IP address of the robot
 });
 
-ros.on('connection', () => {
+ros.on('connection', function() {
   console.log('Connected to websocket server.');
 });
 
@@ -150,7 +150,7 @@ function setMotorSpeed(ros, serviceName, speed) {
     var setMotorSpeedClient = new ROSLIB.Service({
         ros: ros,
         name: serviceName,
-        serviceType: 'mirte_msgs/SetMotorSpeed'
+        serviceType: '/mirte_msgs/SetMotorSpeed'
     });
 
     var request = new ROSLIB.ServiceRequest({
@@ -158,7 +158,7 @@ function setMotorSpeed(ros, serviceName, speed) {
     });
 
     setMotorSpeedClient.callService(request, function(result) {
-        console.log('Result for service call on ' + setMotorSpeedClient.name + ': ' + result);
+        console.log('Result for service call on ' + setMotorSpeed.name + ': ' + result);
     });
 }
 
@@ -231,6 +231,17 @@ function startCleaning(scheduledCleaningIndex = null) {
     cleaningTopic.publish(emptyMessage);
     
     console.log('Cleaning session started.');
+    
+    const waypointsTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: '/global_mission/waypoints',
+    messageType: 'geometry_msgs/PoseArray'  
+    
+    //waypointsTopic.subscribe(message => {
+    //});
+    
+});
+    
 }
 
 function sendScheduledCleanings(ws) {
