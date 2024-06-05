@@ -2,6 +2,7 @@
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import Pose
 from tf.transformations import euler_from_quaternion
 
 class GlobalMissionPlanner:
