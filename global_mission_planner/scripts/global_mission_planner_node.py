@@ -41,7 +41,7 @@ class GlobalMissionPlanner:
         height = self.map_data.info.height
 
         # Calculate the size of each partition
-        partition_width = width // 3
+        partition_width = width // 1
         partition_height = height
 
         # Generate waypoints for each partition
