@@ -9,7 +9,7 @@ class HRICommunication:
         rospy.init_node('hri_communication_node')
 
         # Service to start the mission
-        self.start_mission_service = rospy.Service('start_mission', StartMapping, self.start_mission_callback)
+        self.start_mission_service = rospy.Service('start_mapping', StartMapping, self.start_mapping_callback)
         # Service to start navigation
         self.start_navigation_service = rospy.Service('start_navigation', StartNavigation,
                                                       self.start_navigation_callback)
@@ -41,14 +41,14 @@ class HRICommunication:
 
         return []
 
-def save_map_callback(self, request):
-    # Define the command as a list of strings
-    command = ["rosrun", "map_server", "map_saver", "-f", "/path/to/save/map"]
+    def save_map_callback(self, request):
+        # Define the command as a list of strings
+        command = ["rosrun", "map_server", "map_saver", "-f", "/path/to/save/map"]
 
-    # Run the command
-    subprocess.run(command)
+        # Run the command
+        subprocess.run(command)
 
-    return []
+        return []
 
 
 if __name__ == '__main__':
