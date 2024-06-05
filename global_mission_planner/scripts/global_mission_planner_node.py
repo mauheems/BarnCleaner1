@@ -77,6 +77,8 @@ class GlobalMissionPlanner:
         # Create a publisher for the waypoints
         waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
         # Publish the waypoints
+        rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
+        rospy.loginfo("Publishing waypoints to /waypoints topic")
         waypoints_pub.publish(waypoints)
         rospy.loginfo("Published waypoints to /waypoints topic")
 
