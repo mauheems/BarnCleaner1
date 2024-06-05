@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import roslaunch
-from srv import StartMapping, StartNavigation, SaveMap
+from hri_communication.srv import StartMapping, StartNavigation, SaveMap
 import subprocess
 
 class HRICommunication:
