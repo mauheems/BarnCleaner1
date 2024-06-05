@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import roslaunch
-from hri_communication.srv import StartMapping, StartNavigation, SaveMap
+from hri_communication.srv import StartMapping
 import subprocess
 
 class HRICommunication:
@@ -10,50 +10,39 @@ class HRICommunication:
 
         # Service to start the mission
         self.start_mission_service = rospy.Service('start_mapping', StartMapping, self.start_mapping_callback)
-        # Service to start navigation
-        self.start_navigation_service = rospy.Service('start_navigation', StartNavigation,
-                                                      self.start_navigation_callback)
-        # Service to save the map
-        self.save_map_service = rospy.Service('save_map', SaveMap, self.save_map_callback)
+
+        # Flag to indicate whether to start mapping
+        self.start_mapping_flag = False
+
     def start_mapping_callback(self, request):
-        # Generate a unique identifier for the launch
-        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-        roslaunch.configure_logging(uuid)
-
-        # Create a ROSLaunchParent object
-        launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/mirte/mirte_ws/src/group18/navigation/launch/mapping.launch"])
-
-        # Start the launch file
-        launch.start()
+        # Set the flag to start mapping
+        self.start_mapping_flag = True
 
         return None
 
-    def start_navigation_callback(self, request):
-        # Generate a unique identifier for the launch
-        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-        roslaunch.configure_logging(uuid)
+    def run(self):
+        while not rospy.is_shutdown():
+            if self.start_mapping_flag:
+                # Generate a unique identifier for the launch
+                uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+                roslaunch.configure_logging(uuid)
 
-        # Create a ROSLaunchParent object
-        launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/mirte/mirte_ws/src/group18/navigation/launch/navigation.launch"])
+                # Create a ROSLaunchParent object
+                launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/mirte/mirte_ws/src/group18/navigation/launch/mapping.launch"])
 
-        # Start the launch file
-        launch.start()
+                # Start the launch file
+                launch.start()
 
-        return None
+                # Reset the flag
+                self.start_mapping_flag = False
 
-    def save_map_callback(self, request):
-        # Define the command as a list of strings
-        command = ["rosrun", "map_server", "map_saver", "-f", "/home/mirte/maps/my_map"]
-
-        # Run the command
-        subprocess.run(command)
-
-        return None
+            # Sleep for a bit to avoid busy looping
+            rospy.sleep(5.0)
 
 
 if __name__ == '__main__':
     try:
-        HRICommunication()
-        rospy.spin()
+        hri_communication = HRICommunication()
+        hri_communication.run()
     except rospy.ROSInterruptException:
         pass
