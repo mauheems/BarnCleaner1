@@ -26,7 +26,7 @@ class HRICommunication:
         # Start the launch file
         launch.start()
 
-        return []
+        return None
 
     def start_navigation_callback(self, request):
         # Generate a unique identifier for the launch
@@ -39,7 +39,7 @@ class HRICommunication:
         # Start the launch file
         launch.start()
 
-        return []
+        return None
 
     def save_map_callback(self, request):
         # Define the command as a list of strings
@@ -48,7 +48,7 @@ class HRICommunication:
         # Run the command
         subprocess.run(command)
 
-        return []
+        return None
 
 
 if __name__ == '__main__':
