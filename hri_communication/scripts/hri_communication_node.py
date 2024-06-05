@@ -21,7 +21,7 @@ class HRICommunication:
         roslaunch.configure_logging(uuid)
 
         # Create a ROSLaunchParent object
-        launch = roslaunch.parent.ROSLaunchParent(uuid, ["navigation/launch/mapping.launch"])
+        launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/mirte/mirte_ws/src/group18/navigation/launch/mapping.launch"])
 
         # Start the launch file
         launch.start()
@@ -34,7 +34,7 @@ class HRICommunication:
         roslaunch.configure_logging(uuid)
 
         # Create a ROSLaunchParent object
-        launch = roslaunch.parent.ROSLaunchParent(uuid, ["navigation/launch/navigation.launch"])
+        launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/mirte/mirte_ws/src/group18/navigation/launch/navigation.launch"])
 
         # Start the launch file
         launch.start()
@@ -43,7 +43,7 @@ class HRICommunication:
 
     def save_map_callback(self, request):
         # Define the command as a list of strings
-        command = ["rosrun", "map_server", "map_saver", "-f", "/path/to/save/map"]
+        command = ["rosrun", "map_server", "map_saver", "-f", "/home/mirte/maps/my_map"]
 
         # Run the command
         subprocess.run(command)
