@@ -18,9 +18,12 @@ class GlobalMissionPlanner:
         # Placeholder for the map
         self.map_data = None
 
+        rospy.loginfo("Global mission planner node has been initialized")
+
     def map_callback(self, data):
         # Store the map data
         self.map_data = data
+        rospy.loginfo("Map received, generating waypoints...")
 
         # Divide the map among robots and generate waypoints
         self.divide_map_and_generate_waypoints()
@@ -30,6 +33,8 @@ class GlobalMissionPlanner:
         if self.map_data is None:
             rospy.logwarn("Map data is not available")
             return
+
+        rospy.loginfo("Now dividing map")
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -73,6 +78,9 @@ class GlobalMissionPlanner:
         waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
         # Publish the waypoints
         waypoints_pub.publish(waypoints)
+        rospy.loginfo("Published waypoints to /waypoints topic")
+
+
 
 if __name__ == '__main__':
     try:
