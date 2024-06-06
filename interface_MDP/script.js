@@ -40,6 +40,37 @@ function handleMouseUp() {
     }
 }
 
+// Function to handle key down event
+function handleKeyDown(event) {
+    if (event.repeat) return;  // Ignore repeated keydown events
+    switch (event.key) {
+        case 'ArrowUp':
+            handleMouseDown('forward');
+            break;
+        case 'ArrowDown':
+            handleMouseDown('backward');
+            break;
+        case 'ArrowLeft':
+            handleMouseDown('left');
+            break;
+        case 'ArrowRight':
+            handleMouseDown('right');
+            break;
+    }
+}
+
+// Function to handle key up event
+function handleKeyUp(event) {
+    switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            handleMouseUp();
+            break;
+    }
+}
+
 // Add event listeners to the arrow buttons
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('forward');
@@ -63,6 +94,10 @@ document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
 
 // Add mouseup event listener to the document to handle mouse up outside of buttons
 document.addEventListener('mouseup', handleMouseUp);
+
+// Add keyboard event listeners to the document
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
 
 document.addEventListener("DOMContentLoaded", function() {
     // Manual control button
@@ -210,6 +245,10 @@ ws.onmessage = function(event) {
     else if (message.topic === '/map') {
         drawMap(message.msg);
     }
+    
+    else if (message.op === 'waypoints') {
+        updateProgressBar();
+    }
 };
 
 
@@ -265,6 +304,30 @@ document.getElementById('startCleaningButton').addEventListener('click', () => {
         updateRobotStatus(2, 'cleaning');
         updateRobotStatus(3, 'cleaning');
 });
+
+document.getElementById('stopCleaningButton').addEventListener('click', () => {
+        ws.send(JSON.stringify({ command: 'stopCleaning'}));
+        updateRobotStatus(1, 'manually stopped cleaning and waiting for commands');
+        updateRobotStatus(2, 'manually stopped cleaning and waiting for commands');
+        updateRobotStatus(3, 'manually stopped cleaning and waiting for commands');
+});
+
+updateProgressBar();
+
+// Function to handle the cleaning progress
+function updateProgressBar() {
+    var totalWaypoints = 10;
+    var waypointsDone = 5;
+    if (totalWaypoints > 0) {
+        const progressPercent = (waypointsDone / totalWaypoints) * 100;
+        const progressBar = document.getElementById('cleaningProgressBar');
+        const progressValue = document.getElementById('progressValue');
+        
+        progressBar.style.width = progressPercent + '%';
+        progressBar.setAttribute('aria-valuenow', progressPercent);
+        progressValue.textContent = `${waypointsDone}/${totalWaypoints}`;
+    }
+}
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
 
 
@@ -300,6 +363,14 @@ function drawMap(mapData) {
     ctx.putImageData(imgData, 0, 0);
 }
 
+document.getElementById('confirmSaveMap').addEventListener('click', function() {
+    ws.send(JSON.stringify({ command: 'saveMap' }));
+    // Replace with your save map functionality
+    console.log('Map save confirmed');
+    
+    // Close the modal
+    $('#saveMapModal').modal('hide');
+});
 
 
 // Function to return to the charging station
