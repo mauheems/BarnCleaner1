@@ -13,6 +13,8 @@
     <param name="odom_frame_id" value="odom"/>
     <param name="scan_topic" value="/scan"/>
     <param name="map_size" value="2048"/>
+    <param name="update_min_d" value="0.05"/>
+    <param name="update_min_a" value="0.2"/>
     <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
   </node>
 
