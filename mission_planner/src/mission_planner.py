@@ -2,6 +2,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray, Pose, Point
 from custom_msgs.msg import ObjectLocationArray, ObjectLocation
 from sensor_msgs.msg import BatteryState
+from mission_planner.srv import *
 import numpy as np
 
 class MissionPlanner:
@@ -16,9 +17,11 @@ class MissionPlanner:
         self.current_goal = None
 
         str_serv_path = 'global_mission_planner_service'
-        # print("Waiting for " + str_serv_path)
-        # rospy.wait_for_service(str_serv_path)
-        # self.serv_path = rospy.ServiceProxy(str_serv_path, GlobalMissionPlannerService)
+        print("Waiting for " + str_serv_path)
+        rospy.wait_for_service(str_serv_path)
+        path_proxy = rospy.ServiceProxy(str_serv_path, ProvidePath)
+        self.serv_path = path_proxy(1).local_path
+        self.path_numpy = self.pose_array_to_path(self.serv_path)
         print(str_serv_path + " loaded")
 
         rospy.Subscriber('/tracker/feces_locations', ObjectLocationArray, self.obj_track_callback)
