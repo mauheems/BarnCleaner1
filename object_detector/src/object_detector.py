@@ -20,7 +20,7 @@ class CombineImages(object):
         rospy.Subscriber('/camera/depth/image_raw', Image, self.depth_callback)
         self.detections_pub = rospy.Publisher('/object_detector/detections', Detection, queue_size=1)
 
-        self.ml_model = MLModel('src/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite')
+        self.ml_model = MLModel('src/group18/object_detector/models/tf_lites/efficientnet_tuned_v2.tflite')
         self.ml_model.load_model()
 
     def rgb_callback(self, msg: Image):
