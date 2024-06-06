@@ -6,7 +6,11 @@
     <param name="odom_frame" value="odom"/>
     <param name="map_frame" value="map"/>
     <param name="scan" value="scan"/>
-
-    <param name="map_update_interval" value="0.1"/>
+    <param name="map_update_interval" value="0.05"/>
+        <!-- Set the map size -->
+    <param name="xmin" value="-5.0"/>
+    <param name="ymin" value="-5.0"/>
+    <param name="xmax" value="5.0"/>
+    <param name="ymax" value="5.0"/>
   </node>
 </launch>

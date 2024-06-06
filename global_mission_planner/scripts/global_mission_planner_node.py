@@ -5,6 +5,7 @@ from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import Pose
 from tf.transformations import euler_from_quaternion
 
+
 class GlobalMissionPlanner:
     def __init__(self):
         rospy.init_node('global_mission_planner_node')
@@ -36,42 +37,53 @@ class GlobalMissionPlanner:
 
         rospy.loginfo("Now dividing map")
 
+        # Define the block size
+        block_size = 0.2  # meters
+
         # Get the dimensions of the map
         width = self.map_data.info.width
         height = self.map_data.info.height
 
-        # Calculate the size of each partition
-        partition_width = width // 1
-        partition_height = height
+        # Calculate the number of blocks in the x and y directions
+        num_blocks_x = int(width / block_size)
+        num_blocks_y = int(height / block_size)
 
-        # Generate waypoints for each partition
-        for i in range(3):
-            # Calculate the starting and ending indices for the partition
-            start_index = i * partition_width
-            end_index = (i + 1) * partition_width
+        # Create a 2D array representing the grid
+        grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
-            # Create a new PoseArray for the waypoints
-            waypoints = PoseArray()
+        # Iterate over the map data and update the grid
+        for y in range(height):
+            for x in range(width):
+                # Calculate the block indices
+                block_x = int(x / block_size)
+                block_y = int(y / block_size)
 
+                # Check if the block is available
+                if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
+                    grid[block_y][block_x] = True
+
+        # Generate a path that covers all available blocks in a snake pattern
+        waypoints = PoseArray()
+        for y in range(num_blocks_y):
             # Determine the direction of the snake pattern
-            if i % 2 == 0:
+            if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(start_index, end_index)
+                x_range = range(num_blocks_x)
             else:
                 # Snake pattern from right to left
-                x_range = range(end_index - 1, start_index - 1, -1)
+                x_range = range(num_blocks_x - 1, -1, -1)
 
-            # Iterate over the map data within the partition
-            for y in range(partition_height):
-                for x in x_range:
-                    # Example: Create a waypoint at (x, y)
+            for x in x_range:
+                # Check if the block is available
+                if grid[y][x]:
+                    # Create a waypoint at the center of the block
                     waypoint = Pose()
-                    waypoint.position.x = x
-                    waypoint.position.y = y
+                    waypoint.position.x = (x + 0.5) * block_size
+                    waypoint.position.y = (y + 0.5) * block_size
                     waypoints.poses.append(waypoint)
 
-            # Publish the waypoints for the current partition
-            self.publish_waypoints(waypoints)
+        # Publish the waypoints
+        self.publish_waypoints(waypoints)
 
     def publish_waypoints(self, waypoints):
         # Create a publisher for the waypoints
@@ -83,7 +95,6 @@ class GlobalMissionPlanner:
         rospy.loginfo("Published waypoints to /waypoints topic")
 
 
-
 if __name__ == '__main__':
     try:
         GlobalMissionPlanner()
@@ -91,4 +102,3 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
 
-    
