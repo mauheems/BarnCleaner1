@@ -2,8 +2,12 @@ import rospy
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray, Pose, Point
 from custom_msgs.msg import ObjectLocationArray, ObjectLocation
 from sensor_msgs.msg import BatteryState
+from std_msgs.msg import Bool
 from mission_planner.srv import *
+from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseAction, MoveBaseActionResult, MoveBaseGoal
+import actionlib
 import numpy as np
+import time
 
 class MissionPlanner:
     def __init__(self):
@@ -12,24 +16,51 @@ class MissionPlanner:
         self.path_numpy: np.ndarray = None
         self.faeces_location: list = []
         self.robot_posn = None
-        self.path_numpy_to_follow = None  # stores the current path to follow
         self.status = None
-        self.current_goal = None
+        self.current_goal_id = None
+        self.last_move_time = time.time()
 
         str_serv_path = 'global_mission_planner_service'
         print("Waiting for " + str_serv_path)
         rospy.wait_for_service(str_serv_path)
-        path_proxy = rospy.ServiceProxy(str_serv_path, ProvidePath)
-        self.serv_path = path_proxy(1).local_path
-        self.path_numpy = self.pose_array_to_path(self.serv_path)
+        self.path_proxy = rospy.ServiceProxy(str_serv_path, ProvidePath)
+        self.update_path(Bool(data=True))
         print(str_serv_path + " loaded")
+
+        print("Waiting for move base server")
+        self.move_base_client = actionlib.SimpleActionClient('/move_base', MoveBaseAction)
+        self.move_base_client.wait_for_server()
+        print("Move pase server loaded")
+
+        self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
+
 
         rospy.Subscriber('/tracker/feces_locations', ObjectLocationArray, self.obj_track_callback)
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.own_location_callback)
         rospy.Subscriber('/mirte/power/power_watcher', BatteryState, self.battery_callback)
+        rospy.Subscriber('/mission_planner/reset', Bool, self.update_path)
 
-        self.pub_goal = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
+        rospy.Timer(rospy.Duration(secs=0.1), self.goal_update)
+
         print("Subscribers and publishers created")
+
+    def update_path(self, msg: Bool):
+        serv_path = self.path_proxy(1).local_path
+        self.path_numpy = self.pose_array_to_path(serv_path)
+        self.current_goal_id = 0
+        return
+    
+    def goal_update(self, event):
+        state = self.move_base_client.get_state()
+        if state == 3:
+            self.current_goal_id += 1
+            self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
+        elif state == 4:
+            rospy.logerr("Unable to reach goal, moving on")
+            self.current_goal_id += 1
+            self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
+        print(state)
+        return
 
     @staticmethod
     def pose_array_to_path(pose: PoseArray):
@@ -45,6 +76,22 @@ class MissionPlanner:
             pose_numpy[i, 5] = pose.poses[i].orientation.z
             pose_numpy[i, 6] = pose.poses[i].orientation.w
         return pose_numpy
+    
+    @staticmethod
+    def pose_numpy_to_goal_pose(arr):
+        goal = MoveBaseGoal()
+        pose = Pose()
+        pose.position.x = arr[0]
+        pose.position.y = arr[1]
+        pose.position.z = arr[2]
+        pose.orientation.x = arr[3]
+        pose.orientation.y = arr[4]
+        pose.orientation.z = arr[5]
+        pose.orientation.w = arr[6]
+        goal.target_pose.pose = pose
+        goal.target_pose.header.frame_id = 'map'
+        goal.target_pose.header.stamp = rospy.Time.now()
+        return goal
     
     @staticmethod
     def point_to_array(point: Point):
@@ -71,16 +118,28 @@ class MissionPlanner:
         return
 
     def own_location_callback(self, data: PoseWithCovarianceStamped):
+        rospy.loginfo("own_location_callback")
         position = data.pose.pose.position
         orientation = data.pose.pose.orientation
+        old_posn = self.robot_posn
         self.robot_posn = np.empty((1, 7))
-        self.robot_posn[0] = position.x
-        self.robot_posn[1] = position.y
-        self.robot_posn[2] = position.z
-        self.robot_posn[3] = orientation.x
-        self.robot_posn[4] = orientation.y
-        self.robot_posn[5] = orientation.z
-        self.robot_posn[6] = orientation.w
+        self.robot_posn[0, 0] = position.x
+        self.robot_posn[0, 1] = position.y
+        self.robot_posn[0, 2] = position.z
+        self.robot_posn[0, 3] = orientation.x
+        self.robot_posn[0, 4] = orientation.y
+        self.robot_posn[0, 5] = orientation.z
+        self.robot_posn[0, 6] = orientation.w
+        if old_posn is not None:
+            dist = np.linalg.norm(old_posn[0, :3] - self.robot_posn[0, :3], 2)
+            if dist > 0.1:
+                self.last_move_time = time.time()       
+            elif time.time() - self.last_move_time > 300:
+                pass # Move to next goal
+            else:
+                pass # Do nothing
+        else:
+            pass
         return
 
     def battery_callback(self, data: BatteryState):
