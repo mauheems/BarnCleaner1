@@ -43,7 +43,7 @@ server.listen(port, () => {
 
 //////////////////////////////ROSLIB/////////////////////////////////////////////////
 const ros = new ROSLIB.Ros({
-  url: 'ws://localhost:9091' 
+  url: 'ws://localhost:9092' 
 });
 
 ros.on('connection', function() {

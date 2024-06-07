@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation  # Add this line
 )
 
+catkin_python_setup()
+
 add_service_files(
   FILES
   StartMapping.srv
@@ -21,9 +23,15 @@ generate_messages(
 )
 
 catkin_package(
+  LIBRARIES hri_communication
   CATKIN_DEPENDS roslaunch rospy std_msgs message_runtime  # Add message_runtime here
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+catkin_install_python(PROGRAMS
+  scripts/hri_communication
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
