@@ -113,7 +113,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mission_planner
- CATKIN_DEPENDS message_runtime
+ CATKIN_DEPENDS message_runtime custom_msgs
 #  DEPENDS system_lib
 )
 
