@@ -8,4 +8,3 @@ devel/
 node_modules/
 frames*
 CMakeList
-src/
