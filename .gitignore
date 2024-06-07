@@ -6,3 +6,4 @@ devel/
 .idea/
 .hypothesis/
 node_modules/
+frames*
