@@ -1,0 +1,4 @@
+<launch>
+    <node name="local_mission" pkg="mission_planner" type="mission_planner" respawn="true" output="screen"/>
+    <node name="global_mission" pkg="mission_planner" type="dummy_global_mission_planner.py" respawn="true" output="screen"/>
+</launch>

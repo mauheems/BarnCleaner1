@@ -15,19 +15,20 @@ class MLModel(object):
 
     def load_model(self):
         """
-        Load model from disk and save as a class variable. 
+        Load model from disk and save as a class variable.
         """
         base_options = python.BaseOptions(model_asset_path=self.model_path)
-        options = vision.ObjectDetectorOptions(base_options=base_options,
-                                               running_mode=vision.RunningMode.VIDEO,
-                                               score_threshold=0.5)
+        options = vision.ObjectDetectorOptions(
+            base_options=base_options,
+            running_mode=vision.RunningMode.VIDEO,
+            score_threshold=0.5,
+        )
         self.detector = vision.ObjectDetector.create_from_options(options)
-
 
     @staticmethod
     def visualize_callback(result: vision.ObjectDetectorResult):
         """
-        Extract list of bounding boxes from detections. 
+        Extract list of bounding boxes from detections.
         """
         bbox_list = []
         for det in result.detections:
@@ -42,10 +43,10 @@ class MLModel(object):
             bbox_list.append(bbox)
         return bbox_list
 
-    def inference(self, cv2_img: cv2.UMat, sequence: int):
+    def inference(self, cv2_img, sequence: int):
         """
-        Run inference on the received image and return list of bounding box detections. 
-        Sequence is used to ensure only subsequent frames are process and therefore should monotonically increase. 
+        Run inference on the received image and return list of bounding box detections.
+        Sequence is used to ensure only subsequent frames are process and therefore should monotonically increase.
         """
         rgb_image = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)

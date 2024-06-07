@@ -7,14 +7,6 @@ import cv2
 import numpy as np
 
 class CustomMsgUtil(object):
-    """
-    This class is used to visualize the detections of the ML model. 
-    Subscribed topics: 
-    /object_detector/detections and pub
-    Published topics:
-    /object_detector/annotated_detections
-    /object_detector/depth_detections
-    """
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/object_detector/detections", Detection, self.publish_img)
