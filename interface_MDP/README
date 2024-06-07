@@ -1,0 +1,22 @@
+steps:
+
+terminal 1 rosbridge: 
+- source in mirte_ws -> source ./devel/setup.bash
+- source /opt/ros/noetic/setup.bash
+- export ROS_IP=145.94.190.160 (own ip)
+- export ROS_MASTER_URI=http://145.94.141.169:11311 (robot ip)
+- roslaunch rosbridge_server rosbridge_websocket.launch
+
+
+
+terminal 2 starting interface:
+- source /opt/ros/noetic/setup.bash
+- export ROS_IP=145.94.190.160 (own ip)
+- export ROS_MASTER_URI=http://145.94.141.169:11311 (robot ip)
+- cd group18/interface_MDP
+- node server.js
+
+terminal 3 mirte@mirte:
+- sudo service mirte-ros stop
+- export ROS_IP=145.94.141.169 (own ip)
+- roslaunch mirte_bringup minimal_master.launch (start master)
