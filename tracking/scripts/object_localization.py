@@ -41,7 +41,7 @@ class feces:
         self.continuous_detection_count = 0
         self.continuous_no_detection_count = 0
         self.detected_this_frame = True
-        self.rho = 0.5
+        self.rho = 0.7
 
     def update(self, abs_location):
         if abs_location == None:
@@ -86,7 +86,7 @@ class object_localization:
 
         # self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
         self.camera_detection_sub = rospy.Subscriber(
-            "/object_detector/detections", Detection, self.detection_cb
+            "/object_detector/detections", Detection, self.detection_cb, queue_size=1
         )
 
         self.camera_info_sub = rospy.Subscriber(
@@ -94,11 +94,11 @@ class object_localization:
         )
 
         self.amcl_pose_sub = rospy.Subscriber(
-            "/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb
+            "/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb, queue_size=1
         )
 
         self.feces_pub = rospy.Publisher(
-            "/tracker/feces_locations", ObjectLocationArray, queue_size=10
+            "/tracker/feces_locations", ObjectLocationArray, queue_size=1
         )
 
         rospy.spin()
@@ -122,20 +122,22 @@ class object_localization:
         qz = amcl_pose_msg.pose.pose.orientation.z
         qw = amcl_pose_msg.pose.pose.orientation.w
 
-        self.yaw = math.atan2(
-            2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz)
-        )
+        self.yaw = 2 * math.acos(qw)
+
+        self.amcl_time=amcl_pose_msg.header.stamp.secs+amcl_pose_msg.header.stamp.nsecs/1000000000
 
     def detection_cb(self, detection_msg):
         if (self.camera_info is None) or (self.x is None):
             return
 
+        detection_time = detection_msg.header.stamp.secs+detection_msg.header.stamp.nsecs/1000000000
+
+        rospy.loginfo(f"Delay: {self.amcl_time-detection_time}")
+        
         bboxes = detection_msg.bboxes
-        classes = np.array(detection_msg.classes)
-        detection_score = np.array(detection_msg.detection_score)
-        rospy.loginfo(
-            f"Got {len(bboxes)} detections: {len(classes[classes==0])} feces, {len(classes[classes==1])} obstacles"
-        )
+        # classes = np.array(detection_msg.classes)
+        # detection_score = np.array(detection_msg.detection_score)
+        rospy.loginfo(f"Got {len(bboxes)} detections")
 
         depth_img = np.frombuffer(
             detection_msg.depth_img.data, dtype=np.uint16
@@ -154,6 +156,7 @@ class object_localization:
             center_v = bbox_.center.y
             size_u = bbox_.size_x
             size_v = bbox_.size_y
+            bottom_v = center_v + size_v
 
             if center_v + size_v / 2 < self.cy:
                 rospy.loginfo("Unreasonable detection!")
@@ -161,28 +164,43 @@ class object_localization:
 
             x = (center_u - self.cx) / self.fx
             y = (center_v - self.cy) / self.fy
+            bottom_x = x
+            bottom_y = (bottom_v - self.cy) / self.fy
+
+            r_feces = 0.03
 
             # if class_ == 0:     # 0: feces, 1: obstacle
             if True:
                 # depth image method
-                r_fecess = 0.03
-                Z = (
-                    np.average(
-                        depth_img[
-                            int(center_v - size_v / 4) : int(center_v + size_v / 4) : 2,
-                            int(center_u - size_u / 4) : int(center_u + size_u / 4) : 2,
-                        ]
-                    )
-                    + r_fecess
-                )
-                X = x * Z
+                # 
+                # Z = (
+                #     np.average(
+                #         depth_img[
+                #             int(center_v - size_v / 10) : int(center_v + size_v / 10) : 2,
+                #             int(center_u - size_u / 10) : int(center_u + size_u / 10) : 2,
+                #         ]
+                #     )
+                #     + r_feces
+                # )
+                # X = x * Z
 
-                if Z < 0.8:  # depth not working in low distance
-                    # plane intersection method
+                # source = "Depth Camera"
+
+                #if Z < 0.8:  # depth not working in low distance
+                if True:
+                    # center plane intersection method
                     Y = self.camera_height - self.feces_height / 2
                     k = Y / y
                     X = k * x
-                    Z = k
+                    Z = k + r_feces
+                    source = "Center Plane Intersection"
+
+                    # # ground plane intersection method
+                    # Y = self.camera_height
+                    # k = Y / bottom_y
+                    # X = k * bottom_x
+                    # Z = k + r_feces
+                    # source = "Ground Plane Intersection"
 
                 Z += 0.04  # convert to LiDAR frame
 
@@ -191,6 +209,7 @@ class object_localization:
 
                 self.feces_absolute_locations.append([abs_x, abs_y])
                 rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
+                rospy.loginfo(f"Depth: {Z} from {source}")
 
         self.update_feces_list(self.feces_absolute_locations)
 
@@ -239,7 +258,7 @@ class object_localization:
                     min_dist = dist
                     min_dist_idx = i
 
-            if min_dist < 0.2:
+            if min_dist < 0.5:
                 self.feces_list[min_dist_idx].update(absolute_location)
                 self.feces_list[min_dist_idx].detected_this_frame = True
             else:
