@@ -7,3 +7,5 @@ devel/
 .hypothesis/
 node_modules/
 frames*
+CMakeList
+src/

@@ -9,8 +9,4 @@
 
     <param name="map_update_interval" value="0.1"/>
   </node>
-
-    <!-- Map Saver to save the map -->
-  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/mirte/maps/my_map"/>
-
 </launch>

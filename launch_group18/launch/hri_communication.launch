@@ -1,0 +1,5 @@
+<launch>
+    <!-- Node: hri_communication_node -->
+    <node pkg="hri_communication" type="hri_communication_node.py" name="hri_communication_node" output="screen">
+    </node>
+</launch>
