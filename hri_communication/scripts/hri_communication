@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+import rospy
+from hri_communication import HRICommunication
+
+'''
+Script to run object detector
+'''
+
+if __name__ == '__main__':
+    node_name = 'hri_communication_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = HRICommunication()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()
+
