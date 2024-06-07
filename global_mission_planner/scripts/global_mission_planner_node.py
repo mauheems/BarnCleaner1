@@ -2,6 +2,7 @@
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import Pose
 from tf.transformations import euler_from_quaternion
 
 class GlobalMissionPlanner:
@@ -17,9 +18,12 @@ class GlobalMissionPlanner:
         # Placeholder for the map
         self.map_data = None
 
+        rospy.loginfo("Global mission planner node has been initialized")
+
     def map_callback(self, data):
         # Store the map data
         self.map_data = data
+        rospy.loginfo("Map received, generating waypoints...")
 
         # Divide the map among robots and generate waypoints
         self.divide_map_and_generate_waypoints()
@@ -30,12 +34,14 @@ class GlobalMissionPlanner:
             rospy.logwarn("Map data is not available")
             return
 
+        rospy.loginfo("Now dividing map")
+
         # Get the dimensions of the map
         width = self.map_data.info.width
         height = self.map_data.info.height
 
         # Calculate the size of each partition
-        partition_width = width // 3
+        partition_width = width // 1
         partition_height = height
 
         # Generate waypoints for each partition
@@ -71,7 +77,12 @@ class GlobalMissionPlanner:
         # Create a publisher for the waypoints
         waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
         # Publish the waypoints
+        rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
+        rospy.loginfo("Publishing waypoints to /waypoints topic")
         waypoints_pub.publish(waypoints)
+        rospy.loginfo("Published waypoints to /waypoints topic")
+
+
 
 if __name__ == '__main__':
     try:
