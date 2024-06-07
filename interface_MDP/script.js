@@ -373,17 +373,12 @@ document.getElementById('confirmSaveMap').addEventListener('click', function() {
 });
 
 
-// Function to return to the charging station
-function returnToChargingStation() {
-    console.log('Returning to charging station.');
-    updateRobotStatus(1, 'returning to charging station');
-    ws.send(JSON.stringify({ op: 'call_service', command: 'return_to_charging_station' }));
-}
-
 // Add event listener to the stop mapping button
 document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
+    ws.send(JSON.stringify({ command: 'stopMapping' }));
+    // Replace with your save map functionality
+    console.log('Map save confirmed');
     $('#stopMappingModal').modal('hide');
-    returnToChargingStation();
 });
 /////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
