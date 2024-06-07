@@ -3,11 +3,13 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, PoseArray,
 from custom_msgs.msg import ObjectLocationArray, ObjectLocation
 from sensor_msgs.msg import BatteryState
 from std_msgs.msg import Bool
+from std_srvs.srv import Empty
 from mission_planner.srv import *
 from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseAction, MoveBaseActionResult, MoveBaseGoal
 import actionlib
 import numpy as np
 import time
+
 
 class MissionPlanner:
     def __init__(self):
@@ -32,6 +34,17 @@ class MissionPlanner:
         self.move_base_client.wait_for_server()
         print("Move pase server loaded")
 
+        if True:  # Uniform distribution of current position across the map
+            gloabl_localization_service = '/global_localization'
+            print("Waiting for AMCL " + gloabl_localization_service)
+            rospy.wait_for_service(gloabl_localization_service)
+            self.localization_reset = rospy.ServiceProxy(gloabl_localization_service, Empty)
+            print("Service " + gloabl_localization_service + " loaded. Resetting 2D pose")
+            self.localization_reset()
+        else:  # Set location to home position
+            # Publish to topic /initialpose
+            pass
+
         self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
 
 
@@ -53,13 +66,17 @@ class MissionPlanner:
     def goal_update(self, event):
         state = self.move_base_client.get_state()
         if state == 3:
+            rospy.loginfo("Reached goal, going to next goal")
             self.current_goal_id += 1
             self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
         elif state == 4:
             rospy.logerr("Unable to reach goal, moving on")
             self.current_goal_id += 1
             self.move_base_client.send_goal(self.pose_numpy_to_goal_pose(self.path_numpy[self.current_goal_id]))
-        print(state)
+        elif state == 1:
+            pass  # Robot is going to the goal, do nothing
+        else:
+            rospy.logerr("This state was encountered: " + str(state))
         return
 
     @staticmethod
