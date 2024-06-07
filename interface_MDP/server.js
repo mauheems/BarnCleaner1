@@ -43,7 +43,7 @@ server.listen(port, () => {
 
 //////////////////////////////ROSLIB/////////////////////////////////////////////////
 const ros = new ROSLIB.Ros({
-  url: 'ws://localhost:9090' // Replace <robot_ip> with the actual IP address of the robot
+  url: 'ws://localhost:9091' // Replace <robot_ip> with the actual IP address of the robot
 });
 
 ros.on('connection', function() {
