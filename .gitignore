@@ -5,3 +5,4 @@ devel/
 .gitlab-ci-local/
 .idea/
 .hypothesis/
+node_modules/
