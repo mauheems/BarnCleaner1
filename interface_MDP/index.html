@@ -1,0 +1,789 @@
+<!-- DONE:
+
+-->
+
+<!-- TO DO:
+- add popups for manual control initiation -> terminate cleaning session.
+- make sure startcleaning function updates status
+- make schedule cleanng tab prettier -> one button style
+- make map into 1 column mapping tab
+- link progress bar to right topics
+- link startCleaning function to right topics
+- test map and link map to right topic
+- location during mapping 
+-->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Control</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/shards.min.css">
+    <style>
+        body {
+            font-family: 'Raleway', sans-serif;
+            text-align: center;
+            background-color: #f5f5f5; /* Light gray */
+            margin: 0;
+            padding: 20px;
+            display: grid;
+            grid-gap: 20px; /* Gap between columns */
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+
+        /* Text color */
+        body,
+        .card-text,
+        .nav-link,
+        .nav-tabs .nav-item.show .nav-link,
+        .nav-tabs .nav-link.active {
+            color: #333; /* Dark gray */
+        }
+        
+        .container {
+	    max-width: 2000px; /* Set the maximum width of the page container */
+	    margin: 0 auto; /* Center the container horizontally */
+	    border-radius: 10px; /* Add border radius for rounded corners */
+            padding: 10px; /* Add padding for better readability */
+	    background-color: #f8f9fa; /* Light gray background */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	}
+
+        .button-container {
+            margin-top: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            width: 100px; /* Adjust the width as needed */
+            height: 100px; /* Adjust the height as needed */
+            padding: 15px;
+            font-size: 24px; /* Adjust the font size for arrow symbols */
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .button-container-horizontal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button-container-vertical {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* CSS styles for the notification banner */
+        #notification-banner {
+            display: none; /* Initially hide the banner */
+            position: fixed; /* Fixed position at the top of the screen */
+            top: 0;
+            left: 0;
+            width: 100%; /* Full width */
+            background-color: #ff0000; /* Red background color */
+            color: #ffffff; /* White text color */
+            padding: 10px; /* Add padding for better readability */
+            text-align: center; /* Center-align the text */
+            z-index: 1000; /* Ensure the banner appears above other content */
+        }
+
+
+	/* Tabs container */
+	.nav-tabs {
+	    margin-bottom: 20px; /* Increase space between the tabs and tab content */
+	}
+        /* Tabs container */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #ccc;
+            border-radius: 5px 5px 0 0;
+            margin: 20 10px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Content container */
+        .content {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Robot parameter boxes */
+        .robot-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Three columns */
+            grid-gap: 20px; /* Gap between columns */
+            margin-bottom: 20px; /* Add margin to the bottom of the robot container */
+            margin-top: 20px; /* Add margin to the bottom of the robot container */
+            
+        }
+
+        .robot-box {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .robot-controls {
+            margin-top: 10px;
+        }
+
+        /* Form styling */
+        form {
+            margin-top: 20px;
+        }
+
+        form label {
+            margin-right: 10px;
+        }
+
+        form input {
+            margin-bottom: 10px;
+        }
+
+	.status-log-wrapper {
+	    position: relative;
+	}
+	
+        /* CSS styles for the status log */
+        #status-log-container {
+            height: 200px; /* Set a fixed height for the status log container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 1px solid #ccc; /* Add a border for visual appeal */
+            border-radius: 10px; /* Add border radius for rounded corners */
+            padding: 10px; /* Add padding for better readability */
+            list-style: none; /* Remove bullet points */
+            margin-top: 20px; /* Add margin for spacing */
+            background-color: #f8f9fa; /* Light gray background */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        }
+        
+        #clearStatusLogBtn {
+	    position: absolute;
+	    bottom: 10px;
+	    right: 60px;
+}
+     
+
+        .log-container,
+        .settings-container {
+            padding: 20px;
+            
+        }
+
+        .robot-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .robot-box h2 {
+            margin-bottom: 10px;
+            margin-top: 20px
+            
+        }
+
+        .robot-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-icon {
+            margin-left: 10px;
+        }
+        
+        .schedulecleaning-container{
+            background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+        }
+        
+        #scheduleForm {
+            display: flex;
+            flex-direction: column;
+            
+        }
+
+        #scheduleForm label {
+            margin-bottom: 5px;
+        }
+
+        #scheduleForm input {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #scheduleForm button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+
+        #scheduleForm button:hover {
+            background-color: #218838;
+        }
+
+       #scheduledCleaningsList {
+	    height: 200px; /* Set a fixed height for the scheduled cleanings list */
+	    overflow-y: auto; /* Enable vertical scrolling */
+	    border: 1px solid #ccc; /* Add a border for visual appeal */
+	    border-radius: 5px; /* Add border radius for rounded corners */
+	    padding: 10px; /* Add padding for better readability */
+	    list-style: none; /* Remove bullet points */
+	    margin-top: 20px; /* Add margin for spacing */
+	    background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	    
+	}
+
+        #scheduledCleaningsList li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #scheduledCleaningsList li:last-child {
+            border-bottom: none;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        /* CSS for Battery Percentage and Manure Storage Icons */
+	.battery {
+	    position: absolute;
+	    top: 160px;
+	    right: 10px;
+	    display: flex;
+	    align-items: center;
+	}
+	.manure {
+	    position: absolute;
+	    top: 180px;
+	    right: 10px;
+	    display: flex;
+	    align-items: center;
+	}
+
+	.battery i,
+	.manure i {
+	    margin-right: 5px;
+	}
+
+	/* Styles for Battery Percentage and Manure Storage Text */
+	.battery-percentage,
+	.manure-storage {
+	    font-size: 14px;
+	}
+	.btn-primary.btn-square.active {
+	    background-color: #007bff; /* Active color */
+	    border-color: #007bff; /* Active color */
+	}
+	
+	/* Add custom styles for the spacer div */
+        .spacer {
+            height: 50px; /* Adjust the height as needed */
+        }
+        
+        /* Style for the mapping instructions container */
+	#mapping-instructions-container {
+	    background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	    width: 45%
+	}
+
+	/* Style for the heading */
+	#mapping-instructions h2 {
+	    font-size: 25px; /* Adjust the font size */
+	}
+
+	/* Style for the mapping instructions */
+	#mapping-instructions {
+	    text-align: left; /* Align text to the left */
+	}
+	
+	#start-cleaning-instructions{
+	    text-align: left; /* Align text to the left */
+	}
+	
+	canvas {
+            border: 1px solid black;
+        }
+        
+        .instructions-column {
+	    flex: 1;
+	}
+
+	.map-column {
+	    flex: 1;
+	    margin-left: 20px; /* Add spacing between columns */
+	}
+
+	#map {
+	    width: 80%; /* Adjust map size as needed */
+
+	}
+	.mapping-container {
+	    display: flex;
+	    flex-direction: row;
+	    background-color: #f8f9fa; /* Light gray background */
+	    padding: 20px; /* Add some padding */
+	    border-radius: 10px; /* Rounded corners */
+	    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+	}
+	
+	/* Custom CSS for robot cards */
+	.robot-cards {
+	    display: flex; /* Use flexbox to align items */
+	    justify-content: center; /* Center items horizontally */
+	}
+
+	.robot-card {
+	    margin: 0 40px; /* Adjust margin as needed for space between cards */
+	    width: 22rem; /* Adjust card width as needed */
+	}
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/roslib/1.1.0/roslib.min.js"></script>
+    <script src="script.js" defer></script>
+    <!-- JavaScript Dependencies: jQuery, Popper.js, Bootstrap JS, Shards JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="js/shards.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+    
+    
+    
+    
+    <div class="container">
+        <h1>Mirte Control</h1>
+        <div id="notification-banner"></div>
+    
+    <!-- Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <!-- Status Tab -->
+            <li class="nav-item">
+                <a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="true">Status</a>
+            </li>
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" id="cleaning-session-tab" data-toggle="tab" href="#cleaning-session" role="tab" aria-controls="cleaning-session" aria-selected="false">Cleaning Session</a>
+            </li>
+            
+            <!-- Mapping Tab -->
+            <li class="nav-item">
+                <a class="nav-link" id="mapping-tab" data-toggle="tab" href="#mapping" role="tab" aria-controls="mapping" aria-selected="false">Mapping</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="content">
+            <!-- Status Tab Content -->
+            <div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
+		    <!-- Content for Status tab goes here -->
+		    <div class="status-log-wrapper">
+		    <h2>Status Log</h2>
+			<!-- Status column -->
+			<div id="status-log-container">
+			    
+			    <ul id="status-list"></ul> <!-- List to display status updates -->
+			</div>
+			<!-- Button to clear status log -->
+			<button id="clearStatusLogBtn" class="btn btn-outline-danger" data-toggle="modal" data-target="#clearStatusModal">Clear Status Log</button>
+		    </div>
+		</div>
+            
+            <!-- Cleaning Session Tab Content -->
+            <div class="tab-pane fade" id="cleaning-session" role="tabpanel" aria-labelledby="cleaning-session-tab">
+            
+            <div class= "schedulecleaning-container">
+            <div id="mapping-instructions">
+            <h2>Getting Started:</h2>
+            <p>To schedule a cleaning session, please fill in the form below and press the 'Schedule cleaning' button. You can clear the scheduled cleanings on the right. To start a cleaning session right away, please press the button on the left! Happy cleaning!</p>
+            <button id="startCleaningButton" class="btn btn-primary btn-square" >Start Cleaning Now!</button>
+            
+            </div>
+            
+                <!-- Content for Cleaning Session tab goes here -->
+                <!-- Schedule Cleaning Session form -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="scheduleForm">
+                            <h3>Schedule Cleaning Session</h3>
+                            <form id="scheduleForm">
+                                <label for="scheduleDate">Date:</label>
+                                <input type="date" id="scheduleDate" name="scheduleDate" required>
+                                <br>
+                                <label for="scheduleTime">Time:</label>
+                                <input type="time" id="scheduleTime" name="scheduleTime" required>
+                                <br>
+                                <button type="submit" class="btn btn-primary btn-square">Schedule Cleaning</button>
+                        </form>
+
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- List of Scheduled Cleanings -->
+                        <div>
+                            <h3>Schedule</h3>
+                            <ul id="scheduledCleaningsList"></ul>
+                            <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#clearScheduledCleaningsModal">
+			  Clear Scheduled Cleanings Log
+				</button>
+                        </div>
+                        
+                        <!-- Trigger for clearing scheduled cleanings log -->
+			</div>
+                    </div>
+			
+                </div>
+            </div>
+            
+            <!-- Mapping Tab Content -->
+            <div class="tab-pane fade" id="mapping" role="tabpanel" aria-labelledby="mapping-tab">
+            <div class="mapping-container">
+            <div id="mapping-instructions-container" class="mapping-instructions-container">
+            	<div class="instructions-column">
+		    <div id="mapping-instructions">
+			<h2>Getting Started:</h2>
+			<p>Welcome to the Mapping Tab! Here, you can initiate the mapping process for your robot to create a map of its environment.</p>
+
+			<h2>Instructions for Mapping:</h2>
+			<p>To start mapping, click on the "Start Mapping" button below. Once mapping is started, the robot will begin exploring its environment to create a map. You can monitor the mapping progress in the status log.</p>
+
+			<h2>Mapping Process:</h2>
+			<p>During mapping, the robot will move around, scanning and recording the features of its surroundings. It will create a map based on the collected data, which will be used for navigation of the robots.</p>
+
+			<h2>Ending Mapping:</h2>
+			<p>To stop the mapping process, click on the "Stop Mapping" button below. Once mapping is stopped, the generated map will be available for use.</p>
+
+			<h2>Note:</h2>
+			<p>Ensure that the robot has enough battery power to complete the mapping process. Avoid interrupting the mapping process once started to ensure accurate mapping results.</p>
+
+			<h2>Additional Assistance:</h2>
+			<p>If you encounter any issues or need further assistance, feel free to contact our support team for help.</p>
+		    </div>
+		  </div>
+		    <!-- Trigger Button -->
+		<div class="btn-group" role="group" aria-label="Basic example">
+		   
+		  <button id="start-mapping-btn" class="btn btn-primary" data-toggle="modal" data-target="#startMappingModal"> Start Mapping</button>
+
+    		  <button id="stop-mapping-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#stopMappingModal">Stop Mapping</button>
+		</div>
+		</div>
+
+		<div class="map-column">
+		<h1>Map Visualization</h1>
+		    
+		    <canvas id="map" width="800" height="600"></canvas>
+		    <script src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+		    <script src="https://cdn.jsdelivr.net/npm/ros2djs/build/ros2d.min.js"></script>	
+		</div>
+            </div>
+        </div>
+    </div>
+    
+    
+<div class="spacer"></div>    
+    
+    
+    
+    
+   
+<!-- Robot parameter boxes -->
+
+	<div class="robot-cards">
+	    <!-- Robot 1 -->
+	    <div class="robot-card">
+		<div class="card"  style="width: 22rem;">
+		<img class="card-img" src="/pictures/robot3.png" alt="Card image"  style="width: 22rem;">
+			    <div class="card-body">
+				<h2 class="card-title">Robot 1</h2>
+				<!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="batteryPercentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+				<div id="status1" class="mb-3">Status: </div> <!-- Display status here -->
+			    </div>
+			    <!-- Manual control buttons for Robot 1 -->
+				<div class="card-footer">
+				    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+				    <div>
+					<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+					<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+					<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+				    </div>
+				    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+				</div>
+		</div>
+	    </div>
+
+
+		<!-- Robot 2 -->
+	<div class="robot-card">
+	    <div class="card" style="width: 22rem;">
+	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
+		<div class="card-body">
+		    <h2 class="card-title">Robot 2</h2>
+		    <!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="battery-percentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+		    <div id="status2" class="mb-3">Status: </div> <!-- Display status here -->
+		    
+		</div>
+		<!-- Manual control buttons for Robot 2 -->
+		<div class="card-footer">
+		    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+		    <div>
+			<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+			<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+			<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+		    </div>
+		    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+		</div>
+	    </div>
+	</div>
+
+	<!-- Robot 3 -->
+	<div class="robot-card">
+	    <div class="card" style="width: 22rem;">
+	    <img class="card-img" src="/pictures/robot3.png" alt="Card image" style="width: 22rem;">
+		<div class="card-body">
+		    <h2 class="card-title">Robot 3</h2>
+		    <!-- Battery Percentage -->
+				<div class="battery">
+				    <i class="fas fa-battery-three-quarters"></i>
+				    <span class="battery-percentage" id="battery-percentage" >N/A%</span>
+				</div>
+				<!-- Manure Storage -->
+				<div class="manure">
+				    <i class="fas fa-poop"></i>
+				    <span class="manure-storage" id="manure1">/5</span>
+				</div>
+		    <div id="status3" class="mb-3">Status: </div> <!-- Display status here -->
+		    
+		</div>
+		<!-- Manual control buttons for Robot 3 -->
+		<div class="card-footer">
+		    <button id="forwardBtn" class="btn btn-primary btn-square" disabled>&#8593;</button> <!-- Up arrow -->
+		    <div>
+			<button id="leftBtn" class="btn btn-primary btn-square" disabled>&#8592;</button> <!-- Left arrow -->
+			<button id="manualBtn" class="btn btn-primary btn-square"><i class="fas fa-gamepad"></i></button>
+			<button id="rightBtn" class="btn btn-primary btn-square" disabled>&#8594;</button> <!-- Right arrow -->
+		    </div>
+		    <button id="backwardBtn" class="btn btn-primary btn-square" disabled>&#8595;</button> <!-- Down arrow -->
+		</div>
+	    </div>
+	</div>
+
+
+        </div>
+    <div class="progress-wrapper">
+  <span class="progress-label">Cleaning progress:</span>
+  <div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
+      <span class="progress-value">poops scooped/poops</span>
+    </div>
+  </div>
+</div>
+</div>  
+
+
+<!-- Modal -->
+    <div class="modal fade" id="clearStatusModal" tabindex="-1" role="dialog" aria-labelledby="clearStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clearStatusModalLabel">Are you sure?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to clear the status log? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Nope</button>
+                    <button type="button" class="btn btn-primary" id="confirmClearStatusLog">Yep</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- Modal -->
+<div class="modal fade" id="startMappingModal" tabindex="-1" role="dialog" aria-labelledby="startMappingModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="startMappingModalLabel">Start Mapping</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to start mapping the area? This will interrupt any current activity.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmStartMapping">Start Mapping</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for stopping mapping -->
+<div class="modal fade" id="stopMappingModal" tabindex="-1" role="dialog" aria-labelledby="stopMappingModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="stopMappingModalLabel">Stop Mapping</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to stop mapping and return the robot to the charging station?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button id="confirmStopMappingBtn" type="button" class="btn btn-danger">Stop Mapping</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal for clearing scheduled cleanings -->
+<div class="modal fade" id="clearScheduledCleaningsModal" tabindex="-1" role="dialog" aria-labelledby="clearScheduledCleaningsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clearScheduledCleaningsModalLabel">Clear Scheduled Cleanings?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to clear all scheduled cleanings?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmClearScheduledCleanings">Yes, Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    	const tabs = document.querySelectorAll('.tab');
+    	const contents = document.querySelectorAll('.content');
+
+    	tabs.forEach(tab => {
+		tab.addEventListener('click', () => {
+		    const tabId = tab.dataset.tab;
+
+		    tabs.forEach(t => t.classList.remove('active'));
+		    contents.forEach(c => c.classList.remove('active'));
+
+		    tab.classList.add('active');
+		    document.getElementById(tabId).classList.add('active');
+		});
+	    });
+	});
+	
+	
+	// JavaScript to handle the modal confirmation
+        document.getElementById('confirmClearStatusLog').addEventListener('click', function() {
+            // Clear the status log
+            document.getElementById('status-list').innerHTML = '';
+            // Hide the modal
+            $('#clearStatusModal').modal('hide');
+        });
+    </script>
+
+
+</body>
+</html>
+
+

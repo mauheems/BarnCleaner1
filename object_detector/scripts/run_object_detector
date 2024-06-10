@@ -2,6 +2,10 @@
 import rospy
 from object_detector import CombineImages
 
+'''
+Script to run object detector
+'''
+
 if __name__ == '__main__':
     node_name = 'object_detector_node'
     rospy.init_node(node_name, anonymous=True)

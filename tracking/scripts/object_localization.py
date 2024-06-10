@@ -42,7 +42,7 @@ class feces:
         self.continuous_detection_count = 0
         self.continuous_no_detection_count = 0
         self.detected_this_frame = True
-        self.rho = 0.5
+        self.rho = 0.7
 
     def update(self, abs_location):
         if abs_location == None:
@@ -132,10 +132,16 @@ class object_localization:
 
         self.yaw = 2 * math.acos(qw)
 
+        self.amcl_time=amcl_pose_msg.header.stamp.secs+amcl_pose_msg.header.stamp.nsecs/1000000000
+
     def detection_cb(self, detection_msg):
         if (self.camera_info is None) or (self.x is None):
             return
 
+        detection_time = detection_msg.header.stamp.secs+detection_msg.header.stamp.nsecs/1000000000
+
+        rospy.loginfo(f"Delay: {self.amcl_time-detection_time}")
+        
         bboxes = detection_msg.bboxes
         # classes = np.array(detection_msg.classes)
         # detection_score = np.array(detection_msg.detection_score)
@@ -155,6 +161,7 @@ class object_localization:
             center_v = bbox_.center.y
             size_u = bbox_.size_x
             size_v = bbox_.size_y
+            bottom_v = center_v + size_v
 
             if center_v + size_v / 2 < self.cy:
                 rospy.loginfo("Unreasonable detection!")
@@ -162,6 +169,10 @@ class object_localization:
 
             x = (center_u - self.cx) / self.fx
             y = (center_v - self.cy) / self.fy
+            bottom_x = x
+            bottom_y = (bottom_v - self.cy) / self.fy
+
+            r_feces = 0.03
 
 
             # plane intersection method
@@ -175,8 +186,9 @@ class object_localization:
             abs_x = self.x + math.cos(self.yaw) * Z + math.sin(self.yaw) * X
             abs_y = self.y + math.cos(self.yaw) * X + math.sin(self.yaw) * Z
 
-            self.feces_absolute_locations.append([abs_x, abs_y])
-            rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
+                self.feces_absolute_locations.append([abs_x, abs_y])
+                rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
+                rospy.loginfo(f"Depth: {Z} from {source}")
 
         self.update_feces_list(self.feces_absolute_locations)
 
@@ -225,7 +237,7 @@ class object_localization:
                     min_dist = dist
                     min_dist_idx = i
 
-            if min_dist < 0.2:
+            if min_dist < 0.5:
                 self.feces_list[min_dist_idx].update(absolute_location)
                 self.feces_list[min_dist_idx].detected_this_frame = True
             else:
@@ -239,7 +251,6 @@ class object_localization:
     def ats_cb(self, detection_msg, amcl_pose_msg):
         self.amcl_pose_cb(amcl_pose_msg)
         self.detection_cb(detection_msg)
-
 
 if __name__ == "__main__":
     object_localization()

@@ -109,8 +109,8 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES object_detector
-#  CATKIN_DEPENDS other_catkin_pkg
+ LIBRARIES object_detector
+ CATKIN_DEPENDS vision_msgs std_msgs sensor_msgs custom_msgs geometry_msgs tf
 #  DEPENDS system_lib
 )
 

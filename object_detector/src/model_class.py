@@ -10,10 +10,13 @@ from mediapipe.tasks.python import vision
 
 class MLModel(object):
     def __init__(self, model_path):
-        self.model_path = model_path
-        self.detector: vision.ObjectDetector = None
+        self.model_path = model_path  # path to saved model on disk
+        self.detector: vision.ObjectDetector = None  # place holder for the ML model
 
     def load_model(self):
+        """
+        Load model from disk and save as a class variable.
+        """
         base_options = python.BaseOptions(model_asset_path=self.model_path)
         options = vision.ObjectDetectorOptions(
             base_options=base_options,
@@ -24,6 +27,9 @@ class MLModel(object):
 
     @staticmethod
     def visualize_callback(result: vision.ObjectDetectorResult):
+        """
+        Extract list of bounding boxes from detections.
+        """
         bbox_list = []
         for det in result.detections:
             bbox = BoundingBox2D()
@@ -37,7 +43,11 @@ class MLModel(object):
             bbox_list.append(bbox)
         return bbox_list
 
-    def inference(self, cv2_img: cv2.UMat, sequence: int):
+    def inference(self, cv2_img, sequence: int):
+        """
+        Run inference on the received image and return list of bounding box detections.
+        Sequence is used to ensure only subsequent frames are process and therefore should monotonically increase.
+        """
         rgb_image = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
         detect_list = self.detector.detect_for_video(mp_image, sequence)

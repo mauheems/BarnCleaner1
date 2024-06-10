@@ -1,0 +1,35 @@
+<launch>
+  <!-- Map Server to publish the map for AMCL -->
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/mirte/maps/my_map.yaml" />
+
+
+
+  <!-- AMCL for localization -->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <param name="base_frame_id" value="base_link"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="scan_topic" value="/scan"/>
+    <param name="map_size" value="2048"/>
+    <param name="update_min_d" value="0.02"/>
+    <param name="update_min_a" value="0.1"/>
+    <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
+  </node>
+
+  <!-- Move Base for navigation -->
+  <node pkg="move_base" type="move_base" name="move_base" output="screen">
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load"/>
+    <remap from="/cmd_vel" to="/mobile_base_controller/cmd_vel"/> <!-- Remap cmd_vel topic -->
+    <param name="global_costmap/width" value="7.0"/>
+    <param name="global_costmap/height" value="7.0"/>
+    <param name="global_costmap/origin_x" value="-3.0"/>
+    <param name="global_costmap/origin_y" value="-3.0"/>
+    <param name="local_costmap/width" value="7.0"/>
+    <param name="local_costmap/height" value="7.0"/>
+    <param name="local_costmap/origin_x" value="-3.0"/>
+    <param name="local_costmap/origin_y" value="-3.0"/>
+  </node>
+</launch>
