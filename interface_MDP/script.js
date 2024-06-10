@@ -733,7 +733,7 @@ document.getElementById('confirmStartMapping').onclick = () => {
 function updateMap() {
   const canvas = document.getElementById('map');
   const ctx = canvas.getContext('2d');
-  const mapUrl = '/pictures/robot1.png';  // Update with the actual path to your PGM file
+  const mapUrl = '/pictures/my_map.pgm';  // Update with the actual path to your PGM file
   const img = new Image();
 	console.log(img);
   img.onload = () => {

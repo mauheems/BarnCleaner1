@@ -16,6 +16,8 @@ class HRICommunication:
         # Service to save the map
         self.save_map_service = rospy.Service('update_map', SaveMap, self.save_map_callback)
 
+        rospy.Timer(rospy.Duration(5), self.save_map_callback)
+
         self.map_path = '/workspace/RO47007/code_mega/mirte_ws/maps/my_map'
 
         self.nav_launch_file_path = '/opt/ros/noetic/share/turtlebot3_navigation/launch/turtlebot3_navigation.launch'
@@ -96,6 +98,7 @@ class HRICommunication:
             
             if self.set_save_map_callback == 2:
                 self.start_launch_file(self.save_map_launch_file_path, self.save_map_launch_args)
+                subprocess.call(['cp', self.map_path + '.pgm', '/workspace/RO47007/code_mega/mirte_ws/src/group18/interface_MDP/pictures/my_map.pgm'])
                 rospy.loginfo("Map saved")
                 self.set_save_map_callback = 0
             else:
