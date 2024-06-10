@@ -65,9 +65,10 @@ class GlobalMissionPlanner:
                 if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
                     grid[block_y][block_x] = True
                 
-                # Calculate the scaling factors for x and y coordinates
-                scale_x = width / (num_blocks_x * block_size)
-                scale_y = height / (num_blocks_y * block_size)
+        # Calculate the scaling factors for x and y coordinates
+        scale_x = width / (num_blocks_x * block_size)
+        scale_y = height / (num_blocks_y * block_size)
+        rospy.loginfo(f'scale factor x: {scale_x}, scale factor y: {scale_y}')
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
