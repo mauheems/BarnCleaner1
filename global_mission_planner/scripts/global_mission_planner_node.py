@@ -40,7 +40,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 10 # number of cells
+        block_size_cells = 5 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
