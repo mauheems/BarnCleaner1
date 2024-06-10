@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import rospy
-from nav_msgs.msg import OccupancyGrid
+from nav_msgs.msg import OccupancyGrid, MapMetaData
+from std_msgs.msg import Header
+from geometry_msgs.msg import Pose, Point, Quaternion
 from geometry_msgs.msg import PoseArray
-from geometry_msgs.msg import Pose
-from tf.transformations import euler_from_quaternion
+
 
 
 class GlobalMissionPlanner:
@@ -15,6 +16,8 @@ class GlobalMissionPlanner:
 
         # Publisher for the waypoints
         self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
+
+        self.grid_pub = rospy.Publisher('/grid', OccupancyGrid, queue_size=10)
 
         # Placeholder for the map
         self.map_data = None
@@ -38,7 +41,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size
-        block_size = 0.2  # meters
+        block_size = 10.0  # meters
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -85,12 +88,18 @@ class GlobalMissionPlanner:
         # Publish the waypoints
         self.publish_waypoints(waypoints)
 
+
     def publish_waypoints(self, waypoints):
         waypoints.header.frame_id = "map"
         # Publish the waypoints
         rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
         self.waypoints_pub.publish(waypoints)
         rospy.loginfo("Published waypoints to /waypoints topic")
+
+    def publish_grid(self, grid_msg):
+        # Publish the grid
+        self.grid_pub.publish(grid_msg)
+        rospy.loginfo("Published grid to /grid topic")
 
 
 if __name__ == '__main__':
