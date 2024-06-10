@@ -86,6 +86,7 @@ class GlobalMissionPlanner:
         self.publish_waypoints(waypoints)
 
     def publish_waypoints(self, waypoints):
+        waypoints.header.frame_id = "map"
         # Publish the waypoints
         rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
         self.waypoints_pub.publish(waypoints)
