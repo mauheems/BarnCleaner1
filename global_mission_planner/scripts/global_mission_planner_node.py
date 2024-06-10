@@ -64,6 +64,10 @@ class GlobalMissionPlanner:
                 # Check if the block is available
                 if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
                     grid[block_y][block_x] = True
+                
+                # Calculate the scaling factors for x and y coordinates
+                scale_x = width / (num_blocks_x * block_size)
+                scale_y = height / (num_blocks_y * block_size)
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
@@ -81,8 +85,8 @@ class GlobalMissionPlanner:
                 if grid[y][x]:
                     # Create a waypoint at the center of the block
                     waypoint = Pose()
-                    waypoint.position.x = (x + 0.5) * block_size
-                    waypoint.position.y = (y + 0.5) * block_size
+                    waypoint.position.x = (x + 0.5) * block_size * scale_x
+                    waypoint.position.y = (y + 0.5) * block_size * scale_y
                     waypoints.poses.append(waypoint)
 
         # Publish the waypoints
@@ -100,6 +104,56 @@ class GlobalMissionPlanner:
         # Publish the grid
         self.grid_pub.publish(grid_msg)
         rospy.loginfo("Published grid to /grid topic")
+
+
+if __name__ == '__main__':
+    try:
+        GlobalMissionPlanner()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+
+#!/usr/bin/env python
+import rospy
+from nav_msgs.msg import OccupancyGrid, MapMetaData
+from std_msgs.msg import Header
+from geometry_msgs.msg import Pose, Point, Quaternion
+from geometry_msgs.msg import PoseArray
+
+
+
+class GlobalMissionPlanner:
+    def __init__(self):
+        rospy.init_node('global_mission_planner_node')
+
+        # Subscriber for the map
+        self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
+
+        # Publisher for the waypoints
+        self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
+
+        self.grid_pub = rospy.Publisher('/grid', OccupancyGrid, queue_size=10)
+
+        # Placeholder for the map
+        self.map_data = None
+
+        rospy.loginfo("Global mission planner node has been initialized")
+
+    def map_callback(self, data):
+        # Store the map data
+        self.map_data = data
+        rospy.loginfo("Map received, generating waypoints...")
+
+        # Divide the ma sel  deointle
+ ap_d"Map    fo(" the  # the elf.he n      nuthe s_x)y)]
+ datge(h
+                                                                               
+                
+    def publish_waypoints(self, waypoints):
+        # Publish the waypoints
+        rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
+        self.waypoints_pub.publish(waypoints)
+        rospy.loginfo("Published waypoints to /waypoints topic")
 
 
 if __name__ == '__main__':
