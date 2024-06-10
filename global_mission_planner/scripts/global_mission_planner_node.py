@@ -4,6 +4,7 @@ from nav_msgs.msg import OccupancyGrid, MapMetaData
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion
 from geometry_msgs.msg import PoseArray
+import math
 
 
 
@@ -16,8 +17,6 @@ class GlobalMissionPlanner:
 
         # Publisher for the waypoints
         self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
-
-        self.grid_pub = rospy.Publisher('/grid', OccupancyGrid, queue_size=10)
 
         # Placeholder for the map
         self.map_data = None
@@ -40,16 +39,26 @@ class GlobalMissionPlanner:
 
         rospy.loginfo("Now dividing map")
 
-        # Define the block size
-        block_size = 10.0  # meters
+        # Define the block size in terms of cells
+        block_size_cells = 20  # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
         height = self.map_data.info.height
+        rospy.loginfo(f'Map width: {width}, height: {height}')
+
+        # Get the resolution of the map
+        resolution = self.map_data.info.resolution
+        rospy.loginfo(f'Map resolution: {resolution}')
+
+        # Calculate the block size in meters
+        block_size = block_size_cells * resolution
+        rospy.loginfo(f'Block size: {block_size}')
 
         # Calculate the number of blocks in the x and y directions
-        num_blocks_x = int(width / block_size)
-        num_blocks_y = int(height / block_size)
+        num_blocks_x = math.ceil(width / block_size_cells)
+        num_blocks_y = math.ceil(height / block_size_cells)
+        rospy.loginfo(f'Number of blocks in x and y direction: {num_blocks_x, num_blocks_y}')
 
         # Create a 2D array representing the grid
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
@@ -58,17 +67,12 @@ class GlobalMissionPlanner:
         for y in range(height):
             for x in range(width):
                 # Calculate the block indices
-                block_x = int(x / block_size)
-                block_y = int(y / block_size)
+                block_x = int(x / block_size_cells)
+                block_y = int(y / block_size_cells)
 
                 # Check if the block is available
                 if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
                     grid[block_y][block_x] = True
-                
-        # Calculate the scaling factors for x and y coordinates
-        scale_x = width / (num_blocks_x * block_size)
-        scale_y = height / (num_blocks_y * block_size)
-        rospy.loginfo(f'scale factor x: {scale_x}, scale factor y: {scale_y}')
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
@@ -86,9 +90,11 @@ class GlobalMissionPlanner:
                 if grid[y][x]:
                     # Create a waypoint at the center of the block
                     waypoint = Pose()
-                    waypoint.position.x = (x + 0.5) * block_size * scale_x
-                    waypoint.position.y = (y + 0.5) * block_size * scale_y
+                    waypoint.position.x = (x + 0.5) * block_size
+                    waypoint.position.y = (y + 0.5) * block_size
                     waypoints.poses.append(waypoint)
+
+        rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
         # Publish the waypoints
         self.publish_waypoints(waypoints)
