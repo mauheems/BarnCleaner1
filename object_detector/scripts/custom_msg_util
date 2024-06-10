@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+"""
+This script is used to visualize the detections of the ML model. 
+Subscribed topics: 
+/object_detector/detections and pub
+Published topics:
+/object_detector/annotated_detections
+/object_detector/depth_detections
+"""
+import rospy
+from custom_msg_util import CustomMsgUtil
+
+if __name__ == '__main__':
+    node_name = 'custom_msg_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = CustomMsgUtil()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()
+

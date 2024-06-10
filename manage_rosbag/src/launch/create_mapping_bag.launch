@@ -1,0 +1,20 @@
+<launch>
+  <node pkg="rosbag" type="record" name="mapping_rosbag" required="true" args="
+    /scan
+    /mobile_base_controller/odom
+    /mobile_base_controller/cmd_vel
+    /mirte/encoder/left_front
+    /mirte/encoder/left_rear
+    /mirte/encoder/right_front
+    /mirte/encoder/right_rear
+    /mirte/encoder_speed/left_front
+    /mirte/encoder_speed/left_rear
+    /mirte/encoder_speed/right_front
+    /mirte/encoder_speed/right_rear
+    /tf
+    /tf_static
+    -o mapping_
+    --split
+    --size=1024
+    --lz4"/>
+</launch>
