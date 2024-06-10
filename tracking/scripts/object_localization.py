@@ -72,7 +72,7 @@ class object_localization:
     def __init__(self) -> None:
         self.camera_height = 0.135
         self.feces_height = 0.04
-        self.fecess_r = 0.03
+        self.feces_r = 0.03
         self.camera_info = None
         self.feces_list = []
         self.next_id = 0
@@ -172,9 +172,6 @@ class object_localization:
             bottom_x = x
             bottom_y = (bottom_v - self.cy) / self.fy
 
-            r_feces = 0.03
-
-
             # plane intersection method
             Y = self.camera_height - self.feces_height / 2
             k = Y / y
@@ -186,9 +183,10 @@ class object_localization:
             abs_x = self.x + math.cos(self.yaw) * Z + math.sin(self.yaw) * X
             abs_y = self.y + math.cos(self.yaw) * X + math.sin(self.yaw) * Z
 
-                self.feces_absolute_locations.append([abs_x, abs_y])
-                rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
-                rospy.loginfo(f"Depth: {Z} from {source}")
+            self.feces_absolute_locations.append([abs_x, abs_y])
+
+            rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
+            rospy.loginfo(f"Depth: {Z}")
 
         self.update_feces_list(self.feces_absolute_locations)
 
