@@ -240,11 +240,7 @@ ws.onmessage = function(event) {
     else if (message.op === 'battery_percentage') {
         const percentage = message.percentage;
         document.getElementById('batteryPercentage').textContent = percentage + '%';
-    }
-    
-    else if (message.topic === '/map') {
-        drawMap(message.msg);
-    }
+    }   
     
     else if (message.op === 'waypoints') {
         updateProgressBar();
@@ -333,52 +329,48 @@ function updateProgressBar() {
 
 
 /////////////////////////////////////////MAPPING////////////////////////////////////////////////
-
+let isMappingStarted = false;
+let mapUpdateInterval = null;
 
 document.getElementById('confirmStartMapping').onclick = () => {
     ws.send(JSON.stringify({ command: 'startMapping' }));
     $('#startMappingModal').modal('hide');
-    updateRobotStatus(1, 'mapping');
+    isMappingStarted = true;
+
+    if (isMappingStarted === true) {
+        updateRobotStatus(1, 'mapping');
+        updateMap();  // Initial update
+        mapUpdateInterval = setInterval(updateMap, 5000);  // Update the map every 5 seconds
+    }
 };
 
 
-function drawMap(mapData) {
-    const canvas = document.getElementById('map');
-    const ctx = canvas.getContext('2d');
-    const width = mapData.info.width;
-    const height = mapData.info.height;
-    const data = mapData.data;
+function updateMap() {
+  const canvas = document.getElementById('map');
+  const ctx = canvas.getContext('2d');
+  const mapUrl = '/pictures/robot1.png';  // Update with the actual path to your PGM file
+  const img = new Image();
+	console.log(img);
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  // Draw the new map image
+  };
 
-    const imgData = ctx.createImageData(width, height);
-    for (let i = 0; i < data.length; i++) {
-        const value = data[i];
-        const color = value === -1 ? 128 : value === 100 ? 0 : 255;
-        const index = i * 4;
-        imgData.data[index] = color;
-        imgData.data[index + 1] = color;
-        imgData.data[index + 2] = color;
-        imgData.data[index + 3] = 255; // alpha channel
-    }
-
-    ctx.putImageData(imgData, 0, 0);
+  img.src = `${mapUrl}`;
 }
-
-document.getElementById('confirmSaveMap').addEventListener('click', function() {
-    ws.send(JSON.stringify({ command: 'saveMap' }));
-    // Replace with your save map functionality
-    console.log('Map save confirmed');
-    
-    // Close the modal
-    $('#saveMapModal').modal('hide');
-});
 
 
 // Add event listener to the stop mapping button
 document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
-    ws.send(JSON.stringify({ command: 'stopMapping' }));
-    // Replace with your save map functionality
-    console.log('Map save confirmed');
-    $('#stopMappingModal').modal('hide');
+  ws.send(JSON.stringify({ command: 'stopMapping' }));
+  $('#stopMappingModal').modal('hide');
+  isMappingStarted = false;
+  updateRobotStatus(1, 'waiting for commands');
+
+  if (mapUpdateInterval) {
+    clearInterval(mapUpdateInterval);
+    mapUpdateInterval = null;
+  }
 });
 /////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
