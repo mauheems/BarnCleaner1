@@ -87,14 +87,11 @@ wss.on('connection', ws => {
         } else if (parsedMessage.command === 'schedule') {
             addScheduledCleaning(parsedMessage.data.date, parsedMessage.data.time);
         } else if (parsedMessage.command === 'startMapping') {
-            startMapping();
-	} else if (parsedMessage.command === 'saveMap') {
-            updateMap();	
+            startMapping();	
         } else if (parsedMessage.command === 'stopMapping') {
             stopMapping();
     	}  else if (parsedMessage.command === 'startCleaning') {
-    		startCleaning();
-    		
+    		startCleaning();  		
     	}  else if (parsedMessage.command === 'stopCleaning') {
     		stopCleaning();    
     	}
@@ -337,49 +334,24 @@ setInterval(checkScheduledCleanings, 10000);
 ////////////////////////////////////CLEANING/////////////////////////////////////
 
 /////////////////////////////////////MAPPING//////////////////////////////////////
+
 function startMapping() {
-	
-		    
-	// Define the service client
-	var startMappingClient = new ROSLIB.Service({
-		ros: ros,
-		name: '/start_mapping',
-		serviceType: 'std_srvs/Empty'
-	});
+  // Define the service client
+  var startMappingClient = new ROSLIB.Service({
+    ros: ros,
+    name: '/start_mapping',
+    serviceType: 'std_srvs/Empty'
+  });
 
-	// Create a request (Empty service has no arguments)
-	var request = new ROSLIB.ServiceRequest({});
-		
-	// Call the service
-	startMappingClient.callService(request, function(result) {
-		console.log('Result for service call on /start_mapping:', result);
-	});	
+  // Create a request (Empty service has no arguments)
+  var request = new ROSLIB.ServiceRequest({});
+  
+  // Call the service
+  startMappingClient.callService(request, function(result) {
+    console.log('Result for service call on /start_mapping:', result);
+  });
 }
 
-function updateMap() {
-	const mapTopic = new ROSLIB.Topic({
-			ros: ros,
-			name: '/map',
-			messageType: 'nav_msgs/OccupancyGrid'
-	 	});
-
-		mapTopic.subscribe(message => {
-			ws.send(JSON.stringify({ topic: '/map', msg: message }));
-		});
-	var updateMapClient = new ROSLIB.Service({
-		ros: ros,
-		name: '/update_map',
-		serviceType: 'std_srvs/Empty'
-	});
-
-	    // Create a request (Empty service has no arguments)
-	var request = new ROSLIB.ServiceRequest({});
-
-	// Call the service
-	updateMapClient.callService(request, function(result) {
-		console.log('Result for service call on /update_map:', result);
-	   });   
-}
 
 function stopMapping() {
 // Define the service client
@@ -395,8 +367,9 @@ function stopMapping() {
 	// Call the service
 	stopMappingClient.callService(request, function(result) {
 		console.log('Result for service call on /stop_mapping:', result);
-	   });   
+	});  
 }
 
 
 /////////////////////////////////////MAPPING//////////////////////////////////////
+

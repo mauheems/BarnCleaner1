@@ -425,6 +425,37 @@ function handleMouseUp() {
     }
 }
 
+// Function to handle key down event
+function handleKeyDown(event) {
+    if (event.repeat) return;  // Ignore repeated keydown events
+    switch (event.key) {
+        case 'ArrowUp':
+            handleMouseDown('forward');
+            break;
+        case 'ArrowDown':
+            handleMouseDown('backward');
+            break;
+        case 'ArrowLeft':
+            handleMouseDown('left');
+            break;
+        case 'ArrowRight':
+            handleMouseDown('right');
+            break;
+    }
+}
+
+// Function to handle key up event
+function handleKeyUp(event) {
+    switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            handleMouseUp();
+            break;
+    }
+}
+
 // Add event listeners to the arrow buttons
 document.getElementById('forwardBtn').addEventListener('mousedown', function() {
     handleMouseDown('forward');
@@ -448,6 +479,10 @@ document.getElementById('rightBtn').addEventListener('mouseup', handleMouseUp);
 
 // Add mouseup event listener to the document to handle mouse up outside of buttons
 document.addEventListener('mouseup', handleMouseUp);
+
+// Add keyboard event listeners to the document
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
 
 document.addEventListener("DOMContentLoaded", function() {
     // Manual control button
@@ -590,10 +625,10 @@ ws.onmessage = function(event) {
     else if (message.op === 'battery_percentage') {
         const percentage = message.percentage;
         document.getElementById('batteryPercentage').textContent = percentage + '%';
-    }
+    }   
     
-    else if (message.topic === '/map') {
-        drawMap(message.msg);
+    else if (message.op === 'waypoints') {
+        updateProgressBar();
     }
 };
 
@@ -650,54 +685,77 @@ document.getElementById('startCleaningButton').addEventListener('click', () => {
         updateRobotStatus(2, 'cleaning');
         updateRobotStatus(3, 'cleaning');
 });
+
+document.getElementById('stopCleaningButton').addEventListener('click', () => {
+        ws.send(JSON.stringify({ command: 'stopCleaning'}));
+        updateRobotStatus(1, 'manually stopped cleaning and waiting for commands');
+        updateRobotStatus(2, 'manually stopped cleaning and waiting for commands');
+        updateRobotStatus(3, 'manually stopped cleaning and waiting for commands');
+});
+
+updateProgressBar();
+
+// Function to handle the cleaning progress
+function updateProgressBar() {
+    var totalWaypoints = 10;
+    var waypointsDone = 5;
+    if (totalWaypoints > 0) {
+        const progressPercent = (waypointsDone / totalWaypoints) * 100;
+        const progressBar = document.getElementById('cleaningProgressBar');
+        const progressValue = document.getElementById('progressValue');
+        
+        progressBar.style.width = progressPercent + '%';
+        progressBar.setAttribute('aria-valuenow', progressPercent);
+        progressValue.textContent = `${waypointsDone}/${totalWaypoints}`;
+    }
+}
 /////////////////////////////////SCHEDULE CLEANING///////////////////////////////////
 
 
 
 /////////////////////////////////////////MAPPING////////////////////////////////////////////////
-
+let isMappingStarted = false;
+let mapUpdateInterval = null;
 
 document.getElementById('confirmStartMapping').onclick = () => {
     ws.send(JSON.stringify({ command: 'startMapping' }));
     $('#startMappingModal').modal('hide');
-    updateRobotStatus(1, 'mapping');
+    isMappingStarted = true;
+
+    if (isMappingStarted === true) {
+        updateRobotStatus(1, 'mapping');
+        updateMap();  // Initial update
+        mapUpdateInterval = setInterval(updateMap, 5000);  // Update the map every 5 seconds
+    }
 };
 
 
-function drawMap(mapData) {
-    const canvas = document.getElementById('map');
-    const ctx = canvas.getContext('2d');
-    const width = mapData.info.width;
-    const height = mapData.info.height;
-    const data = mapData.data;
+function updateMap() {
+  const canvas = document.getElementById('map');
+  const ctx = canvas.getContext('2d');
+  const mapUrl = '/pictures/robot1.png';  // Update with the actual path to your PGM file
+  const img = new Image();
+	console.log(img);
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  // Draw the new map image
+  };
 
-    const imgData = ctx.createImageData(width, height);
-    for (let i = 0; i < data.length; i++) {
-        const value = data[i];
-        const color = value === -1 ? 128 : value === 100 ? 0 : 255;
-        const index = i * 4;
-        imgData.data[index] = color;
-        imgData.data[index + 1] = color;
-        imgData.data[index + 2] = color;
-        imgData.data[index + 3] = 255; // alpha channel
-    }
-
-    ctx.putImageData(imgData, 0, 0);
+  img.src = `${mapUrl}`;
 }
 
-
-
-// Function to return to the charging station
-function returnToChargingStation() {
-    console.log('Returning to charging station.');
-    updateRobotStatus(1, 'returning to charging station');
-    ws.send(JSON.stringify({ op: 'call_service', command: 'return_to_charging_station' }));
-}
 
 // Add event listener to the stop mapping button
 document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
-    $('#stopMappingModal').modal('hide');
-    returnToChargingStation();
+  ws.send(JSON.stringify({ command: 'stopMapping' }));
+  $('#stopMappingModal').modal('hide');
+  isMappingStarted = false;
+  updateRobotStatus(1, 'waiting for commands');
+
+  if (mapUpdateInterval) {
+    clearInterval(mapUpdateInterval);
+    mapUpdateInterval = null;
+  }
 });
 /////////////////////////////////////////MAPPING/////////////////////////////////////////////////
 
