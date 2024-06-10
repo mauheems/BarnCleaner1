@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PoseWithCovarianceStamped
+import message_filters
 import numpy as np
 from enum import Enum
 import math
@@ -71,6 +72,7 @@ class object_localization:
     def __init__(self) -> None:
         self.camera_height = 0.135
         self.feces_height = 0.04
+        self.feces_r = 0.03
         self.camera_info = None
         self.feces_list = []
         self.next_id = 0
@@ -85,21 +87,27 @@ class object_localization:
         rospy.init_node("tracker", anonymous=True)
 
         # self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
-        self.camera_detection_sub = rospy.Subscriber(
-            "/object_detector/detections", Detection, self.detection_cb, queue_size=1
+        self.camera_detection_sub = message_filters.Subscriber(
+            "/object_detector/detections", Detection, self.detection_cb
         )
 
         self.camera_info_sub = rospy.Subscriber(
             "/camera/color/camera_info", CameraInfo, self.camera_info_cb
         )
 
-        self.amcl_pose_sub = rospy.Subscriber(
-            "/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb, queue_size=1
+        self.amcl_pose_sub = message_filters.Subscriber(
+            "/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb
         )
 
         self.feces_pub = rospy.Publisher(
-            "/tracker/feces_locations", ObjectLocationArray, queue_size=1
+            "/tracker/feces_locations", ObjectLocationArray, queue_size=10
         )
+
+        self.ats = message_filters.ApproximateTimeSynchronizer(
+            [self.camera_detection_sub, self.amcl_pose_sub], queue_size=100, slop=5
+        )
+
+        self.ats.registerCallback(self.ats_cb)
 
         rospy.spin()
 
@@ -137,12 +145,9 @@ class object_localization:
         bboxes = detection_msg.bboxes
         # classes = np.array(detection_msg.classes)
         # detection_score = np.array(detection_msg.detection_score)
-        rospy.loginfo(f"Got {len(bboxes)} detections")
-
-        depth_img = np.frombuffer(
-            detection_msg.depth_img.data, dtype=np.uint16
-        ).reshape(detection_msg.depth_img.height, detection_msg.depth_img.width)
-        depth_img = depth_img.astype(np.float32) / 1000
+        rospy.loginfo(
+            f"Got {len(bboxes)} detections"
+        )
 
         self.feces_absolute_locations = []
 
@@ -167,49 +172,30 @@ class object_localization:
             bottom_x = x
             bottom_y = (bottom_v - self.cy) / self.fy
 
-            r_feces = 0.03
+            # plane intersection method
+            Y = self.camera_height - self.feces_height / 2
+            k = Y / y
+            X = k * x
+            Z = k
 
-            # if class_ == 0:     # 0: feces, 1: obstacle
-            if True:
-                # depth image method
-                # 
-                # Z = (
-                #     np.average(
-                #         depth_img[
-                #             int(center_v - size_v / 10) : int(center_v + size_v / 10) : 2,
-                #             int(center_u - size_u / 10) : int(center_u + size_u / 10) : 2,
-                #         ]
-                #     )
-                #     + r_feces
-                # )
-                # X = x * Z
+            source = "Center Plane Intersection"
 
-                # source = "Depth Camera"
+            # # ground plane intersection method
+            # Y = self.camera_height
+            # k = Y / bottom_y
+            # X = k * bottom_x
+            # Z = k + self.feces_r
+            # source = "Ground Plane Intersection"
 
-                #if Z < 0.8:  # depth not working in low distance
-                if True:
-                    # center plane intersection method
-                    Y = self.camera_height - self.feces_height / 2
-                    k = Y / y
-                    X = k * x
-                    Z = k + r_feces
-                    source = "Center Plane Intersection"
+            Z += 0.04  # convert to LiDAR frame
 
-                    # # ground plane intersection method
-                    # Y = self.camera_height
-                    # k = Y / bottom_y
-                    # X = k * bottom_x
-                    # Z = k + r_feces
-                    # source = "Ground Plane Intersection"
+            abs_x = self.x + math.cos(self.yaw) * Z + math.sin(self.yaw) * X
+            abs_y = self.y + math.cos(self.yaw) * X + math.sin(self.yaw) * Z
 
-                Z += 0.04  # convert to LiDAR frame
+            self.feces_absolute_locations.append([abs_x, abs_y])
 
-                abs_x = self.x + math.cos(self.yaw) * Z + math.sin(self.yaw) * X
-                abs_y = self.y + math.cos(self.yaw) * X + math.sin(self.yaw) * Z
-
-                self.feces_absolute_locations.append([abs_x, abs_y])
-                rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
-                rospy.loginfo(f"Depth: {Z} from {source}")
+            rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
+            rospy.loginfo(f"Depth: {Z} from {source}")
 
         self.update_feces_list(self.feces_absolute_locations)
 
@@ -269,6 +255,9 @@ class object_localization:
             if not feces_.detected_this_frame:
                 feces_.update(None)
 
+    def ats_cb(self, detection_msg, amcl_pose_msg):
+        self.amcl_pose_cb(amcl_pose_msg)
+        self.detection_cb(detection_msg)
 
 if __name__ == "__main__":
     object_localization()
