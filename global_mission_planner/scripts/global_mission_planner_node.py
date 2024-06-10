@@ -53,8 +53,12 @@ class GlobalMissionPlanner:
 
         width_meters = width * resolution
         height_meters = height * resolution
-        origin_x, origin_y, _ = self.map_data.info.origin.position
         rospy.loginfo(f'Map width in meters: {width_meters}, height in meters: {height_meters}')
+
+        # Get the origin of the map
+        origin_x = self.map_data.info.origin.position.x
+        origin_y = self.map_data.info.origin.position.y
+        rospy.loginfo(f'Map origin: {origin_x, origin_y}')
 
         # Calculate the block size in meters
         block_size = block_size_cells * resolution
