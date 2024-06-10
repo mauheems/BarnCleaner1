@@ -2,6 +2,7 @@
   <!-- Map Saver to save the map -->
   <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/mirte/maps/my_map"/>
 
+
   <!-- Map Server to publish the map for AMCL -->
   <node name="map_server" pkg="map_server" type="map_server" args="/home/mirte/maps/my_map.yaml" />
 

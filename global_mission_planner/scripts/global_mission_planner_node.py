@@ -40,7 +40,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 20  # number of cells
+        block_size_cells = 10 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -50,6 +50,11 @@ class GlobalMissionPlanner:
         # Get the resolution of the map
         resolution = self.map_data.info.resolution
         rospy.loginfo(f'Map resolution: {resolution}')
+
+        width_meters = width * resolution
+        height_meters = height * resolution
+        origin_x, origin_y, _ = self.map_data.info.origin.position
+        rospy.loginfo(f'Map width in meters: {width_meters}, height in meters: {height_meters}')
 
         # Calculate the block size in meters
         block_size = block_size_cells * resolution
@@ -90,8 +95,8 @@ class GlobalMissionPlanner:
                 if grid[y][x]:
                     # Create a waypoint at the center of the block
                     waypoint = Pose()
-                    waypoint.position.x = (x + 0.5) * block_size
-                    waypoint.position.y = (y + 0.5) * block_size
+                    waypoint.position.x = (x + 0.5) * block_size + origin_x
+                    waypoint.position.y = (y + 0.5) * block_size + origin_y
                     waypoints.poses.append(waypoint)
 
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
