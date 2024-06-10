@@ -13,8 +13,8 @@ class GlobalMissionPlanner:
         # Subscriber for the map
         self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
 
-        # # Service for the waypoints
-        # self.waypoints_service = rospy.Service('global_mission/waypoints', PoseArray, self.waypoints_callback)
+        # Publisher for the waypoints
+        self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
 
         # Placeholder for the map
         self.map_data = None
@@ -86,12 +86,9 @@ class GlobalMissionPlanner:
         self.publish_waypoints(waypoints)
 
     def publish_waypoints(self, waypoints):
-        # Create a publisher for the waypoints
-        waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
         # Publish the waypoints
         rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
-        rospy.loginfo("Publishing waypoints to /waypoints topic")
-        waypoints_pub.publish(waypoints)
+        self.waypoints_pub.publish(waypoints)
         rospy.loginfo("Published waypoints to /waypoints topic")
 
 
