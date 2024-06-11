@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import numpy as np
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion
@@ -23,6 +24,9 @@ class GlobalMissionPlanner:
 
         rospy.loginfo("Global mission planner node has been initialized")
 
+        # Initialize the publisher
+        self.grid_pub = rospy.Publisher('/grid', OccupancyGrid, queue_size=10)
+
     def map_callback(self, data):
         # Store the map data
         self.map_data = data
@@ -40,7 +44,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 5 # number of cells
+        block_size_cells = 2 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -65,8 +69,8 @@ class GlobalMissionPlanner:
         rospy.loginfo(f'Block size: {block_size}')
 
         # Calculate the number of blocks in the x and y directions
-        num_blocks_x = math.ceil(width / block_size_cells)
-        num_blocks_y = math.ceil(height / block_size_cells)
+        num_blocks_x = width // block_size_cells
+        num_blocks_y = height // block_size_cells
         rospy.loginfo(f'Number of blocks in x and y direction: {num_blocks_x, num_blocks_y}')
 
         # Create a 2D array representing the grid
@@ -79,20 +83,22 @@ class GlobalMissionPlanner:
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
 
-                # Check if the block is available
-                if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
-                    grid[block_y][block_x] = True
+                # Check if the block indices are within the grid dimensions
+                if block_x < len(grid[0]) and block_y < len(grid):
+                    # Check if the block is available
+                    if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
+                        grid[block_y][block_x] = True
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(num_blocks_y):
+        for y in range(1, num_blocks_y - 1):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(num_blocks_x)
+                x_range = range(1, num_blocks_x - 1)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 1, -1, -1)
+                x_range = range(num_blocks_x - 2, 0, -1)
 
             for x in x_range:
                 # Check if the block is available
@@ -108,6 +114,9 @@ class GlobalMissionPlanner:
         # Publish the waypoints
         self.publish_waypoints(waypoints)
 
+        # publish the grid
+        self.publish_grid(grid_msg=grid)
+
 
     def publish_waypoints(self, waypoints):
         waypoints.header.frame_id = "map"
@@ -117,8 +126,29 @@ class GlobalMissionPlanner:
         rospy.loginfo("Published waypoints to /waypoints topic")
 
     def publish_grid(self, grid_msg):
-        # Publish the grid
-        self.grid_pub.publish(grid_msg)
+        # Convert the grid to a numpy array
+        grid_array = np.array(grid_msg)
+
+        # Convert the boolean grid to occupancy values [0, 100]
+        grid_array = np.where(grid_array, 0, 100)
+
+        # Create an OccupancyGrid message
+        map_msg = OccupancyGrid()
+
+        # Set the header information
+        map_msg.header.stamp = rospy.Time.now()
+        map_msg.header.frame_id = "map"  # Change this to your map's frame_id
+
+        # Set the map metadata (size and resolution)
+        map_msg.info.width = grid_array.shape[1]
+        map_msg.info.height = grid_array.shape[0]
+        map_msg.info.resolution = 1  # Change this to your map's resolution
+
+        # Flatten the grid array and convert it to a list
+        map_msg.data = grid_array.flatten().tolist()
+
+        # Publish the map
+        self.grid_pub.publish(map_msg)
         rospy.loginfo("Published grid to /grid topic")
 
 

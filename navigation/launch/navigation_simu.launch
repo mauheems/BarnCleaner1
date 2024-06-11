@@ -1,9 +1,9 @@
 <launch>
   <!-- Map Saver to save the map -->
-  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/tvennink/simu_ws/maps/my_map"/>
+  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/qmissinne/catkin_ws/src/turtlebot3_simulations/maps/my_map"/>
 
   <!-- Map Server to publish the map for AMCL -->
-  <node name="map_server" pkg="map_server" type="map_server" args="/home/tvennink/simu_ws/maps/my_map.yaml" />
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/qmissinne/catkin_ws/src/turtlebot3_simulations/maps/my_map.yaml" />
 
 
 
