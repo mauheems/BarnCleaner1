@@ -63,7 +63,7 @@ def global_mission_planner_service():
 if __name__ == "__main__":
     pose_array = PoseArray()
     poses = []
-    for value in load_text_in_chunks('~/mirte_ws/goals.txt'):
+    for value in load_text_in_chunks('/home/mirte/mirte_ws/goals.txt'):
         poses.append(extract_position_orientation(value))
     pose_array.poses = poses
     global_mission_planner_service()
