@@ -60,7 +60,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 5 # number of cells
+        block_size_cells = 3 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -107,14 +107,17 @@ class GlobalMissionPlanner:
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(5, num_blocks_y - 5):
+        inflation_radius = 0.25 # meters
+        inflation_index_x_y_range = int(inflation_radius / block_size) + 1
+
+        for y in range(inflation_index_x_y_range, num_blocks_y - inflation_index_x_y_range):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(5, num_blocks_x - 5)
+                x_range = range(inflation_index_x_y_range, num_blocks_x - inflation_index_x_y_range)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 5, 5, -1)
+                x_range = range(num_blocks_x - inflation_index_x_y_range, inflation_index_x_y_range, -1)
 
             for x in x_range:
                 # Check if the block is available
