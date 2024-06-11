@@ -83,31 +83,37 @@ class object_localization:
         self.x = 0
         self.y = 0
         self.yaw = 0
+        self.amcl_time = 0
 
         rospy.init_node("tracker", anonymous=True)
 
         # self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
-        self.camera_detection_sub = message_filters.Subscriber(
-            "/object_detector/detections", Detection, self.detection_cb
-        )
-
+        
         self.camera_info_sub = rospy.Subscriber(
             "/camera/color/camera_info", CameraInfo, self.camera_info_cb
         )
 
-        self.amcl_pose_sub = message_filters.Subscriber(
-            "/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb
+        self.camera_detection_sub = rospy.Subscriber(
+            "/object_detector/detections", Detection, self.detection_cb
         )
+
+        self.amcl_pose_ats_sub = message_filters.Subscriber(
+            "/amcl_pose", PoseWithCovarianceStamped
+        )
+
+        self.camera_detection_ats_sub = message_filters.Subscriber(
+            "/object_detector/detections", Detection
+        )
+
+        self.ats = message_filters.ApproximateTimeSynchronizer(
+            [self.camera_detection_ats_sub, self.amcl_pose_ats_sub], queue_size=100, slop=0.5
+        )
+
+        self.ats.registerCallback(self.ats_cb)
 
         self.feces_pub = rospy.Publisher(
             "/tracker/feces_locations", ObjectLocationArray, queue_size=10
         )
-
-        self.ats = message_filters.ApproximateTimeSynchronizer(
-            [self.camera_detection_sub, self.amcl_pose_sub], queue_size=100, slop=5
-        )
-
-        self.ats.registerCallback(self.ats_cb)
 
         rospy.spin()
 
@@ -130,14 +136,23 @@ class object_localization:
         qz = amcl_pose_msg.pose.pose.orientation.z
         qw = amcl_pose_msg.pose.pose.orientation.w
 
-        self.yaw = math.atan2(
-            2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz)
-        )
+        self.yaw = 2 * math.acos(qw)
+
+        self.amcl_time=amcl_pose_msg.header.stamp.secs+amcl_pose_msg.header.stamp.nsecs/1000000000
 
     def detection_cb(self, detection_msg):
         if (self.camera_info is None) or (self.x is None):
             return
+        
+        if self.amcl_time == 0:
+            rospy.loginfo("No amcl pose received!")
 
+        detection_time = detection_msg.header.stamp.secs+detection_msg.header.stamp.nsecs/1000000000
+        now_time = rospy.Time.now().to_sec()
+        rospy.loginfo(f"Delay: {self.amcl_time-detection_time}")
+        # rospy.loginfo(f"Delay amcl: {now_time-self.amcl_time}")
+        # rospy.loginfo(f"Delay detection: {now_time-detection_time}")
+        
         bboxes = detection_msg.bboxes
         # classes = np.array(detection_msg.classes)
         # detection_score = np.array(detection_msg.detection_score)
@@ -157,6 +172,7 @@ class object_localization:
             center_v = bbox_.center.y
             size_u = bbox_.size_x
             size_v = bbox_.size_y
+            bottom_v = center_v + size_v/2
 
             if center_v + size_v / 2 < self.cy:
                 rospy.loginfo("Unreasonable detection!")
@@ -173,15 +189,6 @@ class object_localization:
             X = k * x
             Z = k
 
-            source = "Center Plane Intersection"
-
-            # # ground plane intersection method
-            # Y = self.camera_height
-            # k = Y / bottom_y
-            # X = k * bottom_x
-            # Z = k + self.feces_r
-            # source = "Ground Plane Intersection"
-
             Z += 0.04  # convert to LiDAR frame
 
             abs_x = self.x + math.cos(self.yaw) * Z + math.sin(self.yaw) * X
@@ -190,7 +197,7 @@ class object_localization:
             self.feces_absolute_locations.append([abs_x, abs_y])
 
             rospy.loginfo(f"Feces detected at ({abs_x}, {abs_y})")
-            rospy.loginfo(f"Depth: {Z} from {source}")
+            rospy.loginfo(f"Depth: {Z}")
 
         self.update_feces_list(self.feces_absolute_locations)
 
@@ -239,7 +246,7 @@ class object_localization:
                     min_dist = dist
                     min_dist_idx = i
 
-            if min_dist < 0.2:
+            if min_dist < 1:
                 self.feces_list[min_dist_idx].update(absolute_location)
                 self.feces_list[min_dist_idx].detected_this_frame = True
             else:
@@ -251,8 +258,9 @@ class object_localization:
                 feces_.update(None)
 
     def ats_cb(self, detection_msg, amcl_pose_msg):
+        rospy.loginfo("sync msg received")
         self.amcl_pose_cb(amcl_pose_msg)
-        self.detection_cb(detection_msg)
+        # self.detection_cb(detection_msg)
 
 if __name__ == "__main__":
     object_localization()
