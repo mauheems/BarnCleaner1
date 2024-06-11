@@ -8,3 +8,4 @@ devel/
 node_modules/
 frames*
 CMakeList
+interface_MDP/pictures/my_map.pgm
