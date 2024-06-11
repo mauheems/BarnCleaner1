@@ -92,12 +92,9 @@ class GlobalMissionPlanner:
         # Create a 2D array representing the grid
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
-
-        sidewalks_inflation_width_m = 0.35
-        sidewalks_inflation_width = int(sidewalks_inflation_width_m / resolution)
         # Iterate over the map data and update the grid
-        for y in range(sidewalks_inflation_width, height - sidewalks_inflation_width):
-            for x in range(sidewalks_inflation_width , width - sidewalks_inflation_width):
+        for y in range(height):
+            for x in range(width):
                 # Calculate the block indices
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
@@ -110,14 +107,14 @@ class GlobalMissionPlanner:
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(2, num_blocks_y - 2):
+        for y in range(1, num_blocks_y - 1):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(2, num_blocks_x - 2)
+                x_range = range(4, num_blocks_x - 4)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 2, 0, -1)
+                x_range = range(num_blocks_x - 4, 4, -1)
 
             for x in x_range:
                 # Check if the block is available
@@ -131,6 +128,7 @@ class GlobalMissionPlanner:
         # Make the last waypoint the same as the first waypoint
         if waypoints.poses:
             waypoints.poses.append(waypoints.poses[0])
+
 
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
