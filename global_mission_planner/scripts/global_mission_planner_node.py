@@ -93,7 +93,7 @@ class GlobalMissionPlanner:
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
 
-        sidewalks_inflation_width_m = 0.25
+        sidewalks_inflation_width_m = 0.35
         sidewalks_inflation_width = int(sidewalks_inflation_width_m / resolution)
         # Iterate over the map data and update the grid
         for y in range(sidewalks_inflation_width, height - sidewalks_inflation_width):
@@ -117,7 +117,7 @@ class GlobalMissionPlanner:
                 x_range = range(2, num_blocks_x - 2)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 2, 0, -2)
+                x_range = range(num_blocks_x - 2, 0, -1)
 
             for x in x_range:
                 # Check if the block is available
