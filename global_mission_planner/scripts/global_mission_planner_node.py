@@ -60,7 +60,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 2 # number of cells
+        block_size_cells = 5 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -93,8 +93,8 @@ class GlobalMissionPlanner:
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
         # Iterate over the map data and update the grid
-        for y in range(4, height - 4):
-            for x in range(4, width - 4):
+        for y in range(3, height - 3):
+            for x in range(3, width - 3):
                 # Calculate the block indices
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
