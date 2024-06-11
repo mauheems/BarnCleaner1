@@ -10,6 +10,26 @@ import actionlib
 import numpy as np
 import time
 
+def dict_to_pose(pose_dict: dict) -> Pose:
+    """
+    Convert a dictionary to a geometry_msgs/Pose object.
+
+    :param pose_dict: Dictionary containing pose information
+    :type pose_dict: dict
+    :return: Pose object
+    :rtype: geometry_msgs.msg.Pose
+    """
+    pose = Pose()
+
+    pose.position.x = pose_dict['position']['x']
+    pose.position.y = pose_dict['position']['y']
+    pose.position.z = pose_dict['position']['z']
+    pose.orientation.x = pose_dict['orientation']['x']
+    pose.orientation.y = pose_dict['orientation']['y']
+    pose.orientation.z = pose_dict['orientation']['z']
+    pose.orientation.w = pose_dict['orientation']['w']
+    return pose
+
 
 class MissionPlanner:
     def __init__(self):
@@ -88,10 +108,10 @@ class MissionPlanner:
             pose_numpy[i, 0] = pose.poses[i].position.x
             pose_numpy[i, 1] = pose.poses[i].position.y
             pose_numpy[i, 2] = pose.poses[i].position.z
-            pose_numpy[i, 3] = pose.poses[i].orientation.x
-            pose_numpy[i, 4] = pose.poses[i].orientation.y
-            pose_numpy[i, 5] = pose.poses[i].orientation.z
-            pose_numpy[i, 6] = pose.poses[i].orientation.w
+            pose_numpy[i, 3] = 0
+            pose_numpy[i, 4] = 0
+            pose_numpy[i, 5] = 0.8937268896831463
+            pose_numpy[i, 6] = 0.44861146514248745
         return pose_numpy
     
     @staticmethod
