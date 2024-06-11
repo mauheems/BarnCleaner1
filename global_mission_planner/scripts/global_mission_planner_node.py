@@ -107,7 +107,7 @@ class GlobalMissionPlanner:
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        inflation_radius = 0.25 # meters
+        inflation_radius = 0.35 # meters
         inflation_index_x_y_range = int(inflation_radius / block_size) + 1
 
         for y in range(inflation_index_x_y_range, num_blocks_y - inflation_index_x_y_range):
