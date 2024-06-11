@@ -100,14 +100,14 @@ class GlobalMissionPlanner:
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(num_blocks_y):
+        for y in range(1, num_blocks_y - 1):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(num_blocks_x)
+                x_range = range(1, num_blocks_x - 1)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 1, -1, -1)
+                x_range = range(num_blocks_x - 2, 0, -1)
 
             for x in x_range:
                 # Check if the block is available
@@ -117,6 +117,7 @@ class GlobalMissionPlanner:
                     waypoint.position.x = (x + 0.5) * block_size + origin_x
                     waypoint.position.y = (y + 0.5) * block_size + origin_y
                     waypoints.poses.append(waypoint)
+
 
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
