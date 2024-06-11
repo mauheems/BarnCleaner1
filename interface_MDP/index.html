@@ -3,7 +3,6 @@
 
 - add a button to call a topic and update home/origin parameter
 - add notifications to status log
-- add popups for manual control initiation -> terminate cleaning session.
 - make sure startcleaning function updates status
 - link progress bar to right topics
 - location during mapping 
@@ -394,11 +393,11 @@
 	  align-items: flex-start;
 	  align-content: flex-start;
 	  height: 50vw;
-	  min-height: 200px;
+	  min-height: 100px;
 	  max-height: 550px;
 	  min-width: 300px;
-	  color: #eee;
-	  background: #1b2030 url(https://images.unsplash.com/photo-1571993142257-eae0b44cf0f1?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ) 50% 0 no-repeat;
+	  background: #1b2030 url('/pictures/background1.jpg') center center no-repeat;
+	  background-size: cover;
 	  border-radius: 3px;
 	}
 
@@ -413,7 +412,7 @@
 	  margin: 20px;
 	  padding: 0px 10px;
 	  font-weight: 900;
-	  font-size: 1.1em;
+	  font-size: .7em;
 	  line-height: 1;
 	  box-sizing: border-box;
 	  height: 40px;
@@ -422,7 +421,7 @@
 	/* Info styles */
 	.info {
 	  width: 100%;
-	  padding: 15% 10% 0 10%;
+	  padding: 10% 10% 0 10%;
 	  text-align: center;
 	  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
 	}
@@ -475,7 +474,7 @@
 			    <h1>Robot Control Interface</h1>
 			    <div class="meta">
 			      <a class="author"></a><br>
-			      By <a>Maurits Heemskerk, Shantnav Agarwal, Quentin Missine, Tijn Vennink,  Siqi Pei</a> on May 30, 2019
+			      By <a>Maurits Heemskerk, Shantnav Agarwal, Quentin Missine, Tijn Vennink,  Siqi Pei</a>
 			    </div>
 			  </div>
 		</div>
@@ -647,9 +646,17 @@
 <div class="spacer"></div>    
 
     
+<div class="progress-wrapper">
+	    <span class="progress-label">Cleaning progress:</span>
+	    <div class="progress">
+		<div class="progress-bar" id="cleaningProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+		    <span class="progress-value" id="progressValue">poops_scooped/poops_pooped</span>
+		</div>
+	    </div>
+</div>    
     
-    
-   
+<div class="spacer"></div>    
+
 <!-- Robot parameter boxes -->
 
 	<div class="robot-cards">
@@ -750,14 +757,7 @@
 	</div>
   
         </div>
-    <div class="progress-wrapper">
-	    <span class="progress-label">Cleaning progress:</span>
-	    <div class="progress">
-		<div class="progress-bar" id="cleaningProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-		    <span class="progress-value" id="progressValue">poops_scooped/poops_pooped</span>
-		</div>
-	    </div>
-	</div>
+
 </div>  
 
 
@@ -868,6 +868,27 @@
   </div>
 </div>
 
+<!-- Modal for Manual Control Confirmation -->
+<div class="modal fade" id="manualControlModal" tabindex="-1" role="dialog" aria-labelledby="manualControlModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manualControlModalLabel">Initiate Manual Control</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to initiate manual control? This will terminate the cleaning session!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" id="confirmManualControl">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Tutorial Modal --><!-- Tutorial Modal --><!-- Tutorial Modal -->
 <div class="modal fade" id="tutorialModal" tabindex="-1" role="dialog" aria-labelledby="tutorialModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -887,7 +908,7 @@
 	      <img class="d-block w-100" src="/pictures/cow1.webp" alt="First slide">
 	      <div class="carousel-caption d-none d-md-block">
 		<h5 class="text-white">Robot Control</h5>
-		<p>Use the cards on the bottom of the page to navigate and control your robots when you seem fit or any issues arise. You can issue movement commands and monitor their status at all times.</p>
+		<p>Use the cards on the bottom of the page to navigate and control your robots when you seem fit or any issues arise. You can issue movement with your keyboard or the buttons. Also monitor their status at all times along with battery percentage.</p>
 	      </div>
 	    </div>
 	    <div class="carousel-item">
@@ -908,7 +929,7 @@
 	      <img class="d-block w-100" src="/pictures/cow4.webp" alt="Second slide">
 	      <div class="carousel-caption d-none d-md-block">
 		<h5 class="text-white">Logs Tab</h5>
-		<p>View and manage the logs of robot activities. You can see past actions, current actions and any notifications which popped up and might seem important.</p>
+		<p>View and manage the logs of robot activities. You can see the past status of your robots.</p>
 	      </div>
 	    </div>
 	  </div>

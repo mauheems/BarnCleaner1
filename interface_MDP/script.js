@@ -113,6 +113,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Event listener for manual control button
     manualBtn.addEventListener('click', function() {
+        // Check if manual control is already active
+        const isManual = manualBtn.classList.contains('active');
+        if (!isManual) {
+            $('#manualControlModal').modal('show'); // Show the manual control confirmation modal
+        } else {
+            // If manual control is already active, deactivate it immediately
+            updateRobotStatus(1, 'waiting for commands');
+            manualBtn.classList.remove('active');
+            forwardBtn.disabled = true;
+            leftBtn.disabled = true;
+            rightBtn.disabled = true;
+            backwardBtn.disabled = true;
+        }
+    });
+
+    // Event listener for confirming manual control
+    document.getElementById('confirmManualControl').addEventListener('click', function() {
         // Toggle the enabled state of the joystick icon and the arrow buttons
         const isManual = manualBtn.classList.contains('active');
         if (!isManual) {
@@ -123,18 +140,10 @@ document.addEventListener("DOMContentLoaded", function() {
             leftBtn.disabled = false;
             rightBtn.disabled = false;
             backwardBtn.disabled = false;
-        } else {
-            // Disable manual control
-            updateRobotStatus(1, 'waiting for commands');
-            manualBtn.classList.remove('active');
-            forwardBtn.disabled = true;
-            leftBtn.disabled = true;
-            rightBtn.disabled = true;
-            backwardBtn.disabled = true;
         }
+        $('#manualControlModal').modal('hide'); // Hide the manual control confirmation modal
     });
 });
-
 
 //////////////////////////////////Manual control//////////////////////////////////////
 
@@ -301,6 +310,7 @@ document.getElementById('startCleaningButton').addEventListener('click', () => {
         updateRobotStatus(1, 'cleaning');
         updateRobotStatus(2, 'cleaning');
         updateRobotStatus(3, 'cleaning');
+        showNotification('Robots started cleaning!');
 });
 
 document.getElementById('stopCleaningButton').addEventListener('click', () => {
@@ -308,6 +318,7 @@ document.getElementById('stopCleaningButton').addEventListener('click', () => {
         updateRobotStatus(1, 'manually stopped cleaning and waiting for commands');
         updateRobotStatus(2, 'manually stopped cleaning and waiting for commands');
         updateRobotStatus(3, 'manually stopped cleaning and waiting for commands');
+        showNotification('Robots stopped cleaning!');
 });
 
 updateProgressBar();
