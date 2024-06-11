@@ -102,8 +102,9 @@ class GlobalMissionPlanner:
                 # Check if the block indices are within the grid dimensions
                 if block_x < len(grid[0]) and block_y < len(grid):
                     # Check if the block is available
-                    if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
+                    if self.map_data.data[y * width + x] == 0 and self.map_data.data[y * width + x + 1] == 0 and self.map_data.data[(y+1) * width + x] == 0:  # 0 represents free space in the map
                         grid[block_y][block_x] = True
+
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
