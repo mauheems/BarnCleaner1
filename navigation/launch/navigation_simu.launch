@@ -1,10 +1,9 @@
 <launch>
   <!-- Map Saver to save the map -->
-  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/mirte/maps/my_map"/>
-
+  <node pkg="map_server" type="map_saver" name="map_saver" output="screen" args="-f /home/tvennink/simu_ws/maps/my_map"/>
 
   <!-- Map Server to publish the map for AMCL -->
-  <node name="map_server" pkg="map_server" type="map_server" args="/home/mirte/maps/my_map.yaml" />
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/tvennink/simu_ws/maps/my_map.yaml" />
 
 
 
@@ -14,8 +13,6 @@
     <param name="odom_frame_id" value="odom"/>
     <param name="scan_topic" value="/scan"/>
     <param name="map_size" value="2048"/>
-    <param name="update_min_d" value="0.05"/>
-    <param name="update_min_a" value="0.2"/>
     <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
   </node>
 
