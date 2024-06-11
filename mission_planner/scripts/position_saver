@@ -55,12 +55,14 @@ class PositionSaver(object):
         pose_dict = pose_to_pose_dict(self.pose)
         rospy.set_param('home_pose', pose_dict)
         rospy.loginfo("home Pose saved to parameter server")
+        print("home Pose saved to parameter server")
         return
     
     def dump_position_callback(self, req):
         pose_dict = pose_to_pose_dict(self.pose)
         rospy.set_param('dump_pose', pose_dict)
         rospy.loginfo("dump Pose saved to parameter server")
+        print("dump Pose saved to parameter server")
         return
 
     def own_location_callback(self, data: PoseWithCovarianceStamped):
