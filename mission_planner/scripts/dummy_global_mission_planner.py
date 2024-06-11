@@ -37,7 +37,7 @@ def extract_position_orientation(text_chunk):
     
 
 # Load text from a file in chunks of 30 lines
-def load_text_in_chunks(file_path, chunk_size=30):
+def load_text_in_chunks(file_path, chunk_size=17):
     with open(file_path, 'r') as file:
         lines = []
         for line in file:
@@ -63,7 +63,7 @@ def global_mission_planner_service():
 if __name__ == "__main__":
     pose_array = PoseArray()
     poses = []
-    for value in load_text_in_chunks('/workspace/RO47007/code_mega/goals.txt'):
+    for value in load_text_in_chunks('~/mirte_ws/goals.txt'):
         poses.append(extract_position_orientation(value))
     pose_array.poses = poses
     global_mission_planner_service()
