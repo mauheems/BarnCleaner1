@@ -93,7 +93,7 @@ class GlobalMissionPlanner:
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
 
-        sidewalks_inflation_width = int(block_size_cells * resolution * 2)
+        sidewalks_inflation_width = (2 / resolution) * 5
         # Iterate over the map data and update the grid
         for y in range(sidewalks_inflation_width, height - sidewalks_inflation_width):
             for x in range(sidewalks_inflation_width , width - sidewalks_inflation_width):
