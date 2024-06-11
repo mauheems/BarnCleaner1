@@ -18,12 +18,14 @@ class HRICommunication:
 
         rospy.Timer(rospy.Duration(5), self.save_map_callback)
 
-        self.map_path = '/workspace/RO47007/code_mega/mirte_ws/maps/my_map'
+        self.base_path = '/home/mirte/mirte_ws/'
 
-        self.nav_launch_file_path = '/opt/ros/noetic/share/turtlebot3_navigation/launch/turtlebot3_navigation.launch'
+        self.map_path = self.base_path + 'maps/my_map'
+
+        self.nav_launch_file_path = self.base_path + 'src/group18/navigation/launch/navigation.launch'
         self.nav_launch_args = ['map_file:='+self.map_path+'.yaml']
 
-        self.map_launch_file_path = '/opt/ros/noetic/share/turtlebot3_slam/launch/turtlebot3_slam.launch'
+        self.map_launch_file_path = self.base_path + 'src/group18/navigation/launch/mapping.launch'
 
         self.save_map_launch_file_path = '/workspace/RO47007/code_mega/mirte_ws/src/group18/navigation/launch/save_map.launch'
         self.save_map_launch_args = ['map_path:='+self.map_path]
@@ -98,7 +100,7 @@ class HRICommunication:
             
             if self.set_save_map_callback == 2:
                 self.start_launch_file(self.save_map_launch_file_path, self.save_map_launch_args)
-                subprocess.call(['cp', self.map_path + '.pgm', '/workspace/RO47007/code_mega/mirte_ws/src/group18/interface_MDP/pictures/my_map.pgm'])
+                subprocess.call(['cp', self.map_path + '.pgm', self.base_path+'/src/group18/interface_MDP/pictures/my_map.pgm'])
                 rospy.loginfo("Map saved")
                 self.set_save_map_callback = 0
             else:
