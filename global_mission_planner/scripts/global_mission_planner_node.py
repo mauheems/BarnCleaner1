@@ -92,9 +92,11 @@ class GlobalMissionPlanner:
         # Create a 2D array representing the grid
         grid = [[False for _ in range(num_blocks_x)] for _ in range(num_blocks_y)]
 
+
+        sidewalks_inflation_width = int(block_size_cells * resolution * 2)
         # Iterate over the map data and update the grid
-        for y in range(3, height - 3):
-            for x in range(3, width - 3):
+        for y in range(sidewalks_inflation_width, height - sidewalks_inflation_width):
+            for x in range(sidewalks_inflation_width , width - sidewalks_inflation_width):
                 # Calculate the block indices
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
