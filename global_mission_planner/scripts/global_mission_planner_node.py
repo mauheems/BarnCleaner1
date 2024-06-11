@@ -109,11 +109,11 @@ class GlobalMissionPlanner:
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(1, num_blocks_y - 1):
+        for y in range(2, num_blocks_y - 2):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(1, num_blocks_x - 1)
+                x_range = range(2, num_blocks_x - 2)
             else:
                 # Snake pattern from right to left
                 x_range = range(num_blocks_x - 1, 0, -1)
