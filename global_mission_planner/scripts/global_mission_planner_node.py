@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import time
 import rospy
+import numpy as np
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Pose
+from mission_planner.srv import ProvidePath, ProvidePathResponse
 import math
 
 
@@ -12,16 +15,28 @@ class GlobalMissionPlanner:
     def __init__(self):
         rospy.init_node('global_mission_planner_node')
 
-        # Subscriber for the map
-        self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
+        self.waypoints = None
 
         # Publisher for the waypoints
         self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
 
+        # Subscriber for the map
+        self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
+
         # Placeholder for the map
         self.map_data = None
 
-        rospy.loginfo("Global mission planner node has been initialized")
+
+        rospy.loginfo("Global mission planner node has been initialized, waiting for map")
+
+        while self.waypoints is None:
+            time.sleep(1)
+
+        # Start service
+        str_serv_path = 'global_mission_planner_service'
+        self.waypoint_service = rospy.Service(str_serv_path, ProvidePath, self.serve_waypoints)
+
+        rospy.loginfo("Global_mission_planner service started, waypoints provided")
 
     def map_callback(self, data):
         # Store the map data
@@ -106,7 +121,9 @@ class GlobalMissionPlanner:
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
         # Publish the waypoints
-        self.publish_waypoints(waypoints)
+        self.waypoints_pub.publish(waypoints)
+        self.waypoints = waypoints
+        return
 
 
     def publish_waypoints(self, waypoints):
@@ -120,6 +137,9 @@ class GlobalMissionPlanner:
         # Publish the grid
         self.grid_pub.publish(grid_msg)
         rospy.loginfo("Published grid to /grid topic")
+
+    def serve_waypoints(self, req):
+        return self.waypoints
 
 
 if __name__ == '__main__':
