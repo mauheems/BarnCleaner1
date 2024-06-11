@@ -27,7 +27,7 @@ class HRICommunication:
 
         self.map_launch_file_path = self.base_path + 'src/group18/navigation/launch/mapping.launch'
 
-        self.save_map_launch_file_path = '/workspace/RO47007/code_mega/mirte_ws/src/group18/navigation/launch/save_map.launch'
+        self.save_map_launch_file_path = '/home/mirte/mirte_ws//src/group18/navigation/launch/save_map.launch'
         self.save_map_launch_args = ['map_path:='+self.map_path]
         self.mapping_node = None
         self.navigation_node = None
