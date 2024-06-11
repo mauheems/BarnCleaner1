@@ -109,6 +109,10 @@ class GlobalMissionPlanner:
                     waypoint.position.y = (y + 0.5) * block_size + origin_y
                     waypoints.poses.append(waypoint)
 
+        # Make the last waypoint the same as the first waypoint
+        if waypoints.poses:
+            waypoints.poses.append(waypoints.poses[0])
+
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
         # Publish the waypoints
