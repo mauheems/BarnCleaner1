@@ -18,7 +18,7 @@ class CombineImages(object):
         self.depth_header = None
 
         self.bridge = CvBridge()
-        rospy.Subscriber("/camera/rgb/image_raw", Image, self.rgb_callback)
+        rospy.Subscriber("/camera/color/image_raw", Image, self.rgb_callback)
 
         self.detections_pub = rospy.Publisher(
             "/object_detector/detections", Detection, queue_size=1
