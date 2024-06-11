@@ -35,8 +35,13 @@ class GlobalMissionPlanner:
         # Start service
         str_serv_path = 'global_mission_planner_service'
         self.waypoint_service = rospy.Service(str_serv_path, ProvidePath, self.serve_waypoints)
+        rospy.Timer(rospy.Duration(10), self.timer_waypoints)
 
         rospy.loginfo("Global_mission_planner service started, waypoints provided")
+
+    def timer_waypoints(self, req):
+        self.waypoints_pub.publish(self.waypoints)
+        return
 
     def map_callback(self, data):
         # Store the map data
