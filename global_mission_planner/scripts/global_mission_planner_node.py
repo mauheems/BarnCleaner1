@@ -60,7 +60,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 6 # number of cells
+        block_size_cells = 4 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -99,11 +99,19 @@ class GlobalMissionPlanner:
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
 
-                # Check if the block indices are within the grid dimensions
-                if block_x < len(grid[0]) and block_y < len(grid):
-                    # Check if the block is available
-                    if self.map_data.data[y * width + x] == 0 and self.map_data.data[y * width + x + 1] == 0 and self.map_data.data[(y+1) * width + x] == 0:  # 0 represents free space in the map
-                        grid[block_y][block_x] = True
+                # # Check if the block indices are within the grid dimensions
+                # if block_x < len(grid[0]) and block_y < len(grid):
+                #     # Check if the block is available
+                #     if self.map_data.data[y * width + x] == 0 and self.map_data.data[y * width + x + 1] == 0 and self.map_data.data[(y+1) * width + x] == 0:  # 0 represents free space in the map
+                #         grid[block_y][block_x] = True
+
+                # Define the relative coordinates of the eight neighboring cells
+                neighbors = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+                # Check if the current cell and all its neighbors are free
+                if all(self.map_data.data[(y + dy) * width + (x + dx)] == 0 for dy, dx in neighbors):
+                    # All neighboring cells are free
+                    grid[block_y][block_x] = True
 
 
         # Generate a path that covers all available blocks in a snake pattern
