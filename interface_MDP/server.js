@@ -43,7 +43,7 @@ server.listen(port, () => {
 
 //////////////////////////////ROSLIB/////////////////////////////////////////////////
 const ros = new ROSLIB.Ros({
-  url: 'ws://localhost:9090' // Replace <robot_ip> with the actual IP address of the robot
+  url: 'ws://localhost:9092' 
 });
 
 ros.on('connection', function() {
@@ -87,18 +87,14 @@ wss.on('connection', ws => {
         } else if (parsedMessage.command === 'schedule') {
             addScheduledCleaning(parsedMessage.data.date, parsedMessage.data.time);
         } else if (parsedMessage.command === 'startMapping') {
-            const mapTopic = new ROSLIB.Topic({
-                ros: ros,
-                name: '/map',
-                messageType: 'nav_msgs/OccupancyGrid'
-            });
-
-            mapTopic.subscribe(message => {
-                ws.send(JSON.stringify({ topic: '/map', msg: message }));
-            });
+            startMapping();	
+        } else if (parsedMessage.command === 'stopMapping') {
+            stopMapping();
     	}  else if (parsedMessage.command === 'startCleaning') {
-    		startCleaning();
-    	}     
+    		startCleaning();  		
+    	}  else if (parsedMessage.command === 'stopCleaning') {
+    		stopCleaning();    
+    	}
     });
 
     
@@ -204,9 +200,28 @@ function controlRobot(command) {
 
 ////////////////MOVEMENT MANUAL CONTROL//////////////////////////////////
 
-////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
+////////////////////////////////////CLEANING/////////////////////////////////////
 const { scheduleJob } = require('node-schedule');
 let scheduledCleanings = [];
+
+var totalWaypoints = 10;
+var waypointsDone = 5;
+var isCleaning = false;
+
+const waypointsTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: '/global_mission/waypoints',
+    messageType: 'geometry_msgs/PoseArray'
+});
+
+const waypointsdoneTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: '/global_mission/waypointsdone',
+    messageType: 'geometry_msgs/PoseArray'
+});
+
+
+
 
 function startCleaning(scheduledCleaningIndex = null) {
     if (scheduledCleaningIndex !== null) {
@@ -217,32 +232,50 @@ function startCleaning(scheduledCleaningIndex = null) {
         console.log('Starting immediate cleaning.');
     }
 
-    // Define the ROSLIB topic for starting the cleaning
-    const cleaningTopic = new ROSLIB.Topic({
+    // Define the service client
+    var startCleaningClient = new ROSLIB.Service({
         ros: ros,
-        name: '/start_cleaning', // Adjust the topic name if necessary
-        messageType: 'std_msgs/Empty' // Adjust the message type if necessary
+        name: '/start_navigation',
+        serviceType: 'std_srvs/Empty'
     });
 
-    // Create an empty message
-    const emptyMessage = new ROSLIB.Message({});
+    // Create a request (Empty service has no arguments)
+    var request = new ROSLIB.ServiceRequest({});
 
-    // Publish the message to start the cleaning
-    cleaningTopic.publish(emptyMessage);
+    // Call the service
+    startCleaningClient.callService(request, function(result) {
+        console.log('Result for service call on /start_navigation:', result);
+        if (result.success) {
+            isCleaning = true;
+            subscribeToProgressTopics();
+        }
+    });    
+    console.log('Cleaning session started.'); 
     
-    console.log('Cleaning session started.');
-    
-    const waypointsTopic = new ROSLIB.Topic({
-    ros: ros,
-    name: '/global_mission/waypoints',
-    messageType: 'geometry_msgs/PoseArray'  
-    
-    //waypointsTopic.subscribe(message => {
-    //});
-    
-});
-    
+    subscribeToProgressTopics();
 }
+
+// Function to subscribe to waypoints topics
+function subscribeToProgressTopics() {
+    waypointsTopic.subscribe(message => {
+    	ws.send(JSON.stringify({op: 'waypoints'}));        
+        totalWaypoints = message.poses.length;
+    });
+
+    waypointsdoneTopic.subscribe(message => {
+        waypointsDone = message.poses.length;
+    });
+}
+
+// Function to stop cleaning and unsubscribe from topics
+function stopCleaning() {
+    isCleaning = false;
+    waypointsTopic.unsubscribe();
+    waypointsdoneTopic.unsubscribe();
+    // Optionally reset the progress bar here if needed
+}
+
+
 
 function sendScheduledCleanings(ws) {
     const message = JSON.stringify({ op: 'update_scheduled_cleanings', scheduledCleanings });
@@ -298,4 +331,45 @@ function checkScheduledCleanings() {
 }
 
 setInterval(checkScheduledCleanings, 10000);
-////////////////////////////////////SCHEDULE CLEANING/////////////////////////////////////
+////////////////////////////////////CLEANING/////////////////////////////////////
+
+/////////////////////////////////////MAPPING//////////////////////////////////////
+
+function startMapping() {
+  // Define the service client
+  var startMappingClient = new ROSLIB.Service({
+    ros: ros,
+    name: '/start_mapping',
+    serviceType: 'std_srvs/Empty'
+  });
+
+  // Create a request (Empty service has no arguments)
+  var request = new ROSLIB.ServiceRequest({});
+  
+  // Call the service
+  startMappingClient.callService(request, function(result) {
+    console.log('Result for service call on /start_mapping:', result);
+  });
+}
+
+
+function stopMapping() {
+// Define the service client
+	var stopMappingClient = new ROSLIB.Service({
+		ros: ros,
+		name: '/stop_mapping',
+		serviceType: 'std_srvs/Empty'
+	});
+
+	    // Create a request (Empty service has no arguments)
+	var request = new ROSLIB.ServiceRequest({});
+
+	// Call the service
+	stopMappingClient.callService(request, function(result) {
+		console.log('Result for service call on /stop_mapping:', result);
+	});  
+}
+
+
+/////////////////////////////////////MAPPING//////////////////////////////////////
+
