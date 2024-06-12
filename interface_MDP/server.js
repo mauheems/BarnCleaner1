@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
 const ROSLIB = require('roslib');
+const express = require('express');
+const app = express();
 
 // Initialize the WebSocket connection
 const ws = new WebSocket('ws://localhost:8080');
@@ -34,6 +36,12 @@ const server = http.createServer((req, res) => {
         });
     }
 });
+
+app.use('/pictures', express.static('/pictures/robot1.png', {
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+}));
 
 // Start the server
 const port = 8080;
@@ -323,6 +331,7 @@ function checkScheduledCleanings() {
             currentHours === scheduledHours &&
             currentMinutes === scheduledMinutes
         ) {
+            ws.send(JSON.stringify({command: 'schedulematch'}));        
             console.log('Scheduled cleaning matched. Starting cleaning...');
             // Match found, trigger cleaning
             startCleaning(index); // Pass the index of the matched cleaning
