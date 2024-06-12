@@ -14,7 +14,7 @@
     <param name="scan_topic" value="/scan"/>
     <param name="map_size" value="2048"/>
     <param name="min_particles" value="1"/>
-    <param name="max_particles" value="6000"/>
+    <param name="max_particles" value="5000"/>
     <param name="update_min_d" value="0.05"/>
     <param name="update_min_a" value="0.02"/>
     <param name="odom_model_type" value="diff-corrected"/>
