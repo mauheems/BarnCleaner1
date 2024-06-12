@@ -60,7 +60,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 3 # number of cells
+        block_size_cells = 5 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -106,7 +106,7 @@ class GlobalMissionPlanner:
                 #         grid[block_y][block_x] = True
 
                 # Define the relative coordinates of the eight neighboring cells
-                neighbors = [(dy, dx) for dy in range(-4, 5) for dx in range(-4, 5) if not (dx == 0 and dy == 0)]
+                neighbors = [(dy, dx) for dy in range(-6, 7) for dx in range(-6, 7) if not (dx == 0 and dy == 0)]
 
                 # Check if the current cell and all its neighbors are free
                 if all(self.map_data.data[(y + dy) * width + (x + dx)] == 0 for dy, dx in neighbors):
