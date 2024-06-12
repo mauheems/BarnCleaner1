@@ -19,9 +19,6 @@
     <param name="update_min_a" value="0.01"/>
     <param name="odom_model_type" value="diff-corrected"/>
     <param name="laser_max_beams" value="180"/>
-</node>
-
-
     <remap from="map" to="map_amcl"/> <!-- Remap map topic to avoid conflict -->
   </node>
 
