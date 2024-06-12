@@ -32,6 +32,6 @@ include_directories(
 )
 
 catkin_install_python(PROGRAMS
-  scripts/hri_communication
+  scripts/hri_communication_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
