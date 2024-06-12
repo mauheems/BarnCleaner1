@@ -13,7 +13,7 @@ TrajectoryPlannerROS:
 
   yaw_goal_tolerance: 3.14159
   xy_goal_tolerance: 0.1
-  latch_xy_goal_tolerance: false
+  latch_xy_goal_tolerance: true
 
 #  pdist_scale: 1.5
 #  gdist_scale: 1.5
@@ -21,7 +21,7 @@ TrajectoryPlannerROS:
 #  heading_lookahead: 1.5
 #  heading_scoring: true
 #  heading_scoring_timestep: 1.0
-#  meter_scoring: true
+  meter_scoring: true
   publish_cost_grid_pc: true
 
 #  planner_frequency: 0.0
