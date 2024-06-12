@@ -256,6 +256,11 @@ ws.onmessage = function(event) {
     else if (message.op === 'waypoints') {
         updateProgressBar();
     }
+    else if (message.command === 'schedulematch') {
+	updateRobotStatus(1, 'cleaning');
+	updateRobotStatus(2, 'cleaning');
+	updateRobotStatus(3, 'cleaning');
+    }
 };
 
 
@@ -315,9 +320,9 @@ document.getElementById('startCleaningButton').addEventListener('click', () => {
 
 document.getElementById('stopCleaningButton').addEventListener('click', () => {
         ws.send(JSON.stringify({ command: 'stopCleaning'}));
-        updateRobotStatus(1, 'manually stopped cleaning and waiting for commands');
-        updateRobotStatus(2, 'manually stopped cleaning and waiting for commands');
-        updateRobotStatus(3, 'manually stopped cleaning and waiting for commands');
+        updateRobotStatus(1, 'waiting for commands, cleaning session stopped ');
+        updateRobotStatus(2, 'waiting for commands, cleaning session stopped');
+        updateRobotStatus(3, 'waiting for commands, cleaning session stopped');
         showNotification('Robots stopped cleaning!');
 });
 
@@ -342,7 +347,6 @@ function updateProgressBar() {
 
 
 /////////////////////////////////////////MAPPING////////////////////////////////////////////////
-
 let isMappingStarted = false;
 let mapUpdateInterval = null;
 
@@ -374,10 +378,10 @@ function updateMap() {
         console.error('Error loading image:', error);
     };
 
-    const timestamp = new Date().getTime();
-    img.src = `${mapUrl}?t=${timestamp}`;
+    img.src = `${mapUrl}`;
     console.log(`Image source set to: ${img.src}`);
 }
+
 
 // Add event listener to the stop mapping button
 document.getElementById('confirmStopMappingBtn').addEventListener('click', function () {
