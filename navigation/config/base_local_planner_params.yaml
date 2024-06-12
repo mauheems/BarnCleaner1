@@ -3,13 +3,13 @@ TrajectoryPlannerROS:
   min_vel_x: 0.0
   max_vel_trans: 0.20 # 0.5
   min_vel_trans: 0.0
-  max_vel_theta: 1.0
-  min_vel_theta: -1.0
+  max_vel_theta: 0.5
+  min_vel_theta: 0.5
 
   acc_lim_theta: 1.0
   acc_lim_x: 1.0
   acc_lim_y: 1.0
-  holonomic_robot: true
+  holonomic_robot: false
 
   yaw_goal_tolerance: 3.14159
   xy_goal_tolerance: 0.1
@@ -25,7 +25,7 @@ TrajectoryPlannerROS:
   publish_cost_grid_pc: true
 
   planner_frequency: 0.0
-  controller_frequency: 1.0
+  controller_frequency: 8.0
 
   base_frame_id: base_link
   global_frame_id: map
