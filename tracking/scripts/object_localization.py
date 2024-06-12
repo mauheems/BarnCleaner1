@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from visualization_msgs.msg import Marker, MarkerArray
 import message_filters
 import numpy as np
 from enum import Enum
@@ -112,7 +113,11 @@ class object_localization:
         self.ats.registerCallback(self.ats_cb)
 
         self.feces_pub = rospy.Publisher(
-            "/tracker/feces_locations", ObjectLocationArray, queue_size=10
+            "/tracker/feces_locations", ObjectLocationArray, queue_size=1
+        )
+
+        self.markers_pub = rospy.Publisher(
+            "/tracker/feces_markers", MarkerArray, queue_size=1
         )
 
         rospy.spin()
@@ -211,11 +216,12 @@ class object_localization:
         feces_location_array_msg = ObjectLocationArray()
         feces_location_array_msg.header = detection_msg.header
 
+        feces_markers_msg = MarkerArray()
+
         feces_location_array = []
         for feces_ in self.feces_list:
             if feces_.state == State.ACTIVE or feces_.state == State.NOT_IN_SPOT:
                 feces_location_msg = ObjectLocation()
-
                 feces_location_msg.uuid = feces_.uuid
                 feces_location_msg.abs_location.x = feces_.abs_x
                 feces_location_msg.abs_location.y = feces_.abs_y
@@ -223,11 +229,40 @@ class object_localization:
                     feces_location_msg.in_view = True
                 elif feces_.state == State.NOT_IN_SPOT:
                     feces_location_msg.in_view = False
-
                 feces_location_array.append(feces_location_msg)
+
+                feces_marker = Marker()
+                feces_marker.header.frame_id = "map"
+                feces_marker.header.stamp = rospy.Time()
+                feces_marker.ns = "feces"
+                feces_marker.id = feces_.uuid
+                feces_marker.type = Marker.CYLINDER
+                feces_marker.action = Marker.MODIFY
+                feces_marker.pose.position.x = feces_.abs_x
+                feces_marker.pose.position.y = feces_.abs_y
+                feces_marker.pose.position.z = self.feces_height / 2
+                feces_marker.pose.orientation.x = 0.0
+                feces_marker.pose.orientation.y = 0.0
+                feces_marker.pose.orientation.z = 0.0
+                feces_marker.pose.orientation.w = 1.0
+                feces_marker.scale.x = self.feces_r * 2
+                feces_marker.scale.y = self.feces_r * 2
+                feces_marker.scale.z = self.feces_height
+                feces_marker.color.a = 1.0
+                if feces_.state == State.ACTIVE:
+                    feces_marker.color.r = 0.0
+                    feces_marker.color.g = 1.0
+                    feces_marker.color.b = 0.0
+                elif feces_.state == State.NOT_IN_SPOT:
+                    feces_marker.color.r = 0.6
+                    feces_marker.color.g = 0.6
+                    feces_marker.color.b = 0.6
+                feces_markers_msg.markers.append(feces_marker)
+
 
         feces_location_array_msg.object_location = feces_location_array
         self.feces_pub.publish(feces_location_array_msg)
+        self.markers_pub.publish(feces_markers_msg)
 
     def update_feces_list(self, absolute_locations):
         for feces_ in self.feces_list:
