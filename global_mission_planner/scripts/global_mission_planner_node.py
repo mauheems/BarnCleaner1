@@ -106,7 +106,7 @@ class GlobalMissionPlanner:
                 #         grid[block_y][block_x] = True
 
                 # Define the relative coordinates of the eight neighboring cells
-                neighbors = [(dy, dx) for dy in range(-2, 3) for dx in range(-2, 3) if not (dx == 0 and dy == 0)]
+                neighbors = [(dy, dx) for dy in range(-3, 4) for dx in range(-3, 4) if not (dx == 0 and dy == 0)]
 
                 # Check if the current cell and all its neighbors are free
                 if all(self.map_data.data[(y + dy) * width + (x + dx)] == 0 for dy, dx in neighbors):
