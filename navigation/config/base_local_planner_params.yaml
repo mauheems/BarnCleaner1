@@ -6,9 +6,9 @@ TrajectoryPlannerROS:
   acc_lim_theta: 2.0
   acc_lim_x: 1.5
   acc_lim_y: 1.5
-  holonomic_robot: false
+  holonomic_robot: true
 
-  yaw_goal_tolerance: 3.14
+  yaw_goal_tolerance: 0.25
   xy_goal_tolerance: 0.15
   latch_xy_goal_tolerance: false
 
