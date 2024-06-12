@@ -28,5 +28,5 @@ terminal 4 starting interface:
 - cd group18/interface_MDP
 - node server.js
 
-
+F12 --> DISABLE CACHE for mapping
 
