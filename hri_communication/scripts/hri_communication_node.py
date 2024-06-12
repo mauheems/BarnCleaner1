@@ -22,7 +22,7 @@ class HRICommunication:
         # Service to save the map
         self.save_map_service = rospy.Service('update_map', SaveMap, self.save_map_callback)
 
-        rospy.Timer(rospy.Duration(5), self.save_map_callback)
+        # rospy.Timer(rospy.Duration(5), self.save_map_callback)
 
         self.base_path = '/home/mirte/mirte_ws/'
 
@@ -59,6 +59,7 @@ class HRICommunication:
 
     def save_map_callback(self, request):
         self.set_save_map_callback = 2
+        rospy.loginfo("Map saving request received")
         return None
 
     def start_launch_file(self, launch_file_path, launch_args=['']):
