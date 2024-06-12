@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslaunch
   rospy
   std_msgs
+  std_srvs
   message_generation  # Add this line
 )
 
@@ -20,6 +21,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  std_srvs
 )
 
 catkin_package(
