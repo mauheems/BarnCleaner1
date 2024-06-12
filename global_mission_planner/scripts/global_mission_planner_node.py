@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import time
 import rospy
+import numpy as np
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Pose
+from mission_planner.srv import ProvidePath, ProvidePathResponse
 import math
 
 
@@ -12,16 +15,33 @@ class GlobalMissionPlanner:
     def __init__(self):
         rospy.init_node('global_mission_planner_node')
 
-        # Subscriber for the map
-        self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
+        self.waypoints = None
 
         # Publisher for the waypoints
         self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
 
+        # Subscriber for the map
+        self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
+
         # Placeholder for the map
         self.map_data = None
 
-        rospy.loginfo("Global mission planner node has been initialized")
+
+        rospy.loginfo("Global mission planner node has been initialized, waiting for map")
+
+        while self.waypoints is None:
+            time.sleep(1)
+
+        # Start service
+        str_serv_path = 'global_mission_planner_service'
+        self.waypoint_service = rospy.Service(str_serv_path, ProvidePath, self.serve_waypoints)
+        rospy.Timer(rospy.Duration(10), self.timer_waypoints)
+
+        rospy.loginfo("Global_mission_planner service started, waypoints provided")
+
+    def timer_waypoints(self, req):
+        self.waypoints_pub.publish(self.waypoints)
+        return
 
     def map_callback(self, data):
         # Store the map data
@@ -40,7 +60,7 @@ class GlobalMissionPlanner:
         rospy.loginfo("Now dividing map")
 
         # Define the block size in terms of cells
-        block_size_cells = 5 # number of cells
+        block_size_cells = 4 # number of cells
 
         # Get the dimensions of the map
         width = self.map_data.info.width
@@ -79,20 +99,34 @@ class GlobalMissionPlanner:
                 block_x = int(x / block_size_cells)
                 block_y = int(y / block_size_cells)
 
-                # Check if the block is available
-                if self.map_data.data[y * width + x] == 0:  # 0 represents free space in the map
+                # # Check if the block indices are within the grid dimensions
+                # if block_x < len(grid[0]) and block_y < len(grid):
+                #     # Check if the block is available
+                #     if self.map_data.data[y * width + x] == 0 and self.map_data.data[y * width + x + 1] == 0 and self.map_data.data[(y+1) * width + x] == 0:  # 0 represents free space in the map
+                #         grid[block_y][block_x] = True
+
+                # Define the relative coordinates of the eight neighboring cells
+                neighbors = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+                # Check if the current cell and all its neighbors are free
+                if all(self.map_data.data[(y + dy) * width + (x + dx)] == 0 for dy, dx in neighbors):
+                    # All neighboring cells are free
                     grid[block_y][block_x] = True
+
 
         # Generate a path that covers all available blocks in a snake pattern
         waypoints = PoseArray()
-        for y in range(num_blocks_y):
+        inflation_radius = 0.35 # meters
+        inflation_index_x_y_range = int(inflation_radius / block_size) + 1
+
+        for y in range(inflation_index_x_y_range, num_blocks_y - inflation_index_x_y_range):
             # Determine the direction of the snake pattern
             if y % 2 == 0:
                 # Snake pattern from left to right
-                x_range = range(num_blocks_x)
+                x_range = range(inflation_index_x_y_range, num_blocks_x - inflation_index_x_y_range)
             else:
                 # Snake pattern from right to left
-                x_range = range(num_blocks_x - 1, -1, -1)
+                x_range = range(num_blocks_x - inflation_index_x_y_range, inflation_index_x_y_range, -1)
 
             for x in x_range:
                 # Check if the block is available
@@ -103,14 +137,23 @@ class GlobalMissionPlanner:
                     waypoint.position.y = (y + 0.5) * block_size + origin_y
                     waypoints.poses.append(waypoint)
 
+        # Make the last waypoint the same as the first waypoint
+        if waypoints.poses:
+            waypoints.poses.append(waypoints.poses[0])
+
+
         rospy.loginfo(f'First few waypoints: {waypoints.poses[:5]}')
 
         # Publish the waypoints
-        self.publish_waypoints(waypoints)
+        waypoints.header.frame_id = "map"
+
+
+        self.waypoints_pub.publish(waypoints)
+        self.waypoints = waypoints
+        return
 
 
     def publish_waypoints(self, waypoints):
-        waypoints.header.frame_id = "map"
         # Publish the waypoints
         rospy.loginfo(f'Number of waypoints: {len(waypoints.poses)}')
         self.waypoints_pub.publish(waypoints)
@@ -120,6 +163,9 @@ class GlobalMissionPlanner:
         # Publish the grid
         self.grid_pub.publish(grid_msg)
         rospy.loginfo("Published grid to /grid topic")
+
+    def serve_waypoints(self, req):
+        return self.waypoints
 
 
 if __name__ == '__main__':

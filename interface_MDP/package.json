@@ -9,7 +9,11 @@
     "moment": "^2.30.1",
     "nocache": "^4.0.0",
     "node-schedule": "^2.1.1",
+<<<<<<< HEAD
     "on-headers": "^1.0.2",
+=======
+    "pgmjs": "^1.1.5",
+>>>>>>> ae68a076444a6d450568f75be0cc0507aa5a2aa9
     "roslib": "^1.4.1",
     "rosnodejs": "^3.1.0",
     "ws": "^8.17.0"

@@ -1,7 +1,7 @@
-obstacle_range: 6.0
-raytrace_range: 7.0
-robot_radius: 0.2
-inflation_radius: 0.55
+obstacle_range: 3.5
+raytrace_range: 3.5
+robot_radius: 0.30
+inflation_radius: 0.10
 observation_sources: laser_scan_sensor #odom_sensor
 laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: /scan, marking: true, clearing: true}
 

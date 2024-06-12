@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import rospy
+from geometry_msgs.msg import Pose, PoseWithCovarianceStamped
+from mission_planner.srv import ProvidePath, ProvidePathResponse
+from std_msgs.msg import Empty
+import re
+
+
+def pose_to_pose_dict(pose: Pose) -> dict:
+    pose_dict = {
+        'position': {
+            'x': pose.position.x,
+            'y': pose.position.y,
+            'z': pose.position.z
+        },
+        'orientation': {
+            'x': pose.orientation.x,
+            'y': pose.orientation.y,
+            'z': pose.orientation.z,
+            'w': pose.orientation.w
+        }
+    }
+    return pose_dict
+
+def dict_to_pose(pose_dict: dict) -> Pose:
+    """
+    Convert a dictionary to a geometry_msgs/Pose object.
+
+    :param pose_dict: Dictionary containing pose information
+    :type pose_dict: dict
+    :return: Pose object
+    :rtype: geometry_msgs.msg.Pose
+    """
+    pose = Pose()
+
+    pose.position.x = pose_dict['position']['x']
+    pose.position.y = pose_dict['position']['y']
+    pose.position.z = pose_dict['position']['z']
+    pose.orientation.x = pose_dict['orientation']['x']
+    pose.orientation.y = pose_dict['orientation']['y']
+    pose.orientation.z = pose_dict['orientation']['z']
+    pose.orientation.w = pose_dict['orientation']['w']
+    return pose
+
+class PositionSaver(object):
+    def __init__(self) -> None:
+        self.pose = None
+
+        rospy.Subscriber('/save_home_pose', Empty, self.home_position_callback)
+        rospy.Subscriber('/save_dump_pose', Empty, self.dump_position_callback)
+        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.own_location_callback)
+
+    def home_position_callback(self, req):
+        if self.pose is not None:
+            pose_dict = pose_to_pose_dict(self.pose)
+            rospy.set_param('home_pose', pose_dict)
+            rospy.loginfo("home Pose saved to parameter server")
+            print("home Pose saved to parameter server")
+        else:
+            rospy.loginfo("home Pose not saved as it is not available")
+            print("home Pose not saved as it is not available")
+        return
+    
+    def dump_position_callback(self, req):
+        if self.pose is not None:
+            pose_dict = pose_to_pose_dict(self.pose)
+            rospy.set_param('dump_pose', pose_dict)
+            rospy.loginfo("dump Pose saved to parameter server")
+            print("dump Pose saved to parameter server")
+        else:
+            rospy.loginfo("dump Pose not saved as it is not available")
+            print("dump Pose not saved as it is not available")
+        return
+
+    def own_location_callback(self, data: PoseWithCovarianceStamped):
+        self.pose = data.pose.pose
+        rospy.loginfo("Own location updated")
+        print("Own location updated")
+        return
+        
+
+
+if __name__ == "__main__":
+    node_name = 'position_saver_node'
+    rospy.init_node(node_name, anonymous=True)
+    node = PositionSaver()
+    print(node_name + " setup")
+    while not rospy.is_shutdown():
+        rospy.spin()

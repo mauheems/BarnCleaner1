@@ -1,31 +1,31 @@
 TrajectoryPlannerROS:
-  max_vel_x: 0.45
+  max_vel_x: 1.1
   min_vel_x: 0.0
-  max_vel_trans: 0.8 # 0.5
-  min_vel_trans: 0.2
-  max_vel_theta: 6.0
-  min_vel_theta: -6.0
+  max_vel_trans: 2.0 # 0.5
+  min_vel_trans: 0.0
+  max_vel_theta: 0.5
+  min_vel_theta: 0.5
 
-  acc_lim_theta: 2.0
-  acc_lim_x: 1.5
-  acc_lim_y: 1.5
+  acc_lim_theta: 1.0
+  acc_lim_x: 1.0
+  acc_lim_y: 1.0
   holonomic_robot: false
 
-  yaw_goal_tolerance: 0.1
-  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 3.14159
+  xy_goal_tolerance: 0.1
   latch_xy_goal_tolerance: false
 
-  pdist_scale: 0.6
-  gdist_scale: 0.8
-  occdist_scale: 0.01
-  heading_lookahead: 0.325
-  heading_scoring: false
-  heading_scoring_timestep: 0.8
-  meter_scoring: true
+#  pdist_scale: 1.5
+#  gdist_scale: 1.5
+#  occdist_scale: 0.1
+#  heading_lookahead: 1.5
+#  heading_scoring: true
+#  heading_scoring_timestep: 1.0
+#  meter_scoring: true
   publish_cost_grid_pc: true
 
-  planner_frequency: 1.0
-  controller_frequency: 1.0
+#  planner_frequency: 0.0
+  controller_frequency: 30.0
 
   base_frame_id: base_link
   global_frame_id: map
