@@ -107,7 +107,7 @@ class MissionPlanner:
         for i in range(n):
             pose_numpy[i, 0] = pose.poses[i].position.x
             pose_numpy[i, 1] = pose.poses[i].position.y
-            pose_numpy[i, 2] = pose.poses[i].position.z
+            pose_numpy[i, 2] = 0
             pose_numpy[i, 3] = 0
             pose_numpy[i, 4] = 0
             pose_numpy[i, 5] = 0.8937268896831463
