@@ -244,7 +244,7 @@ function startCleaning(scheduledCleaningIndex = null) {
     var startCleaningClient = new ROSLIB.Service({
         ros: ros,
         name: '/start_navigation',
-        serviceType: 'std_srvs/Empty'
+        serviceType: 'hri_communication/StartNavigation'
     });
 
     // Create a request (Empty service has no arguments)
@@ -349,7 +349,7 @@ function startMapping() {
   var startMappingClient = new ROSLIB.Service({
     ros: ros,
     name: '/start_mapping',
-    serviceType: 'std_srvs/Empty'
+    serviceType: 'hri_communication/StartMapping'
   });
 
   // Create a request (Empty service has no arguments)
