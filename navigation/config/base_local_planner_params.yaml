@@ -25,7 +25,7 @@ TrajectoryPlannerROS:
   publish_cost_grid_pc: true
 
 #  planner_frequency: 0.0
-  controller_frequency: 30.0
+#  controller_frequency: 30.0
 
   base_frame_id: base_link
   global_frame_id: map
