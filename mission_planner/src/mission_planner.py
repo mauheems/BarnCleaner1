@@ -132,7 +132,7 @@ class MissionPlanner:
     
     @staticmethod
     def point_to_array(point: Point):
-        arr = np.array([point.x, point.y, point.z])
+        arr = np.array([point.x, point.y, 0])
         return arr
     
     def distance_calc(point):
