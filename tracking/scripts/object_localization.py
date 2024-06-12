@@ -94,9 +94,9 @@ class object_localization:
             "/camera/color/camera_info", CameraInfo, self.camera_info_cb
         )
 
-        # self.camera_detection_sub = rospy.Subscriber(
-        #     "/object_detector/detections", Detection, self.detection_cb
-        # )
+        self.camera_detection_sub = rospy.Subscriber(
+            "/object_detector/detections", Detection, self.detection_cb
+        )
 
         self.amcl_pose_ats_sub = message_filters.Subscriber(
             "/amcl_pose", PoseWithCovarianceStamped
@@ -295,7 +295,7 @@ class object_localization:
     def ats_cb(self, detection_msg, amcl_pose_msg):
         rospy.loginfo("sync msg received")
         self.amcl_pose_cb(amcl_pose_msg)
-        self.detection_cb(detection_msg)
+        # self.detection_cb(detection_msg)
 
 if __name__ == "__main__":
     object_localization()
