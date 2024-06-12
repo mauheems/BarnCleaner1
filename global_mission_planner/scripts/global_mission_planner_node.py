@@ -17,8 +17,9 @@ class GlobalMissionPlanner:
 
         self.waypoints = None
 
-        # Publisher for the waypoints
+        aypoints
         self.waypoints_pub = rospy.Publisher('/waypoints', PoseArray, queue_size=10)
+        # Publisher for the w
 
         # Subscriber for the map
         self.map_sub = rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
