@@ -69,9 +69,9 @@ class MissionPlanner:
 
 
         rospy.Subscriber('/tracker/feces_locations', ObjectLocationArray, self.obj_track_callback)
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.own_location_callback)
-        rospy.Subscriber('/mirte/power/power_watcher', BatteryState, self.battery_callback)
-        rospy.Subscriber('/mission_planner/reset', Bool, self.update_path)
+        # rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.own_location_callback)
+        # rospy.Subscriber('/mirte/power/power_watcher', BatteryState, self.battery_callback)
+        # rospy.Subscriber('/mission_planner/reset', Bool, self.update_path)
 
         rospy.Timer(rospy.Duration(secs=0.1), self.goal_update)
 
