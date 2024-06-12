@@ -22,20 +22,22 @@
   </node>
 
   <!-- Move Base for navigation -->
-  <node pkg="move_base" type="move_base" name="move_base" output="screen">
-    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
-    <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load"/>
-    <remap from="/cmd_vel" to="/mobile_base_controller/cmd_vel"/> <!-- Remap cmd_vel topic -->
-    <param name="global_costmap/width" value="8.0"/>
-    <param name="global_costmap/height" value="8.0"/>
-    <param name="global_costmap/origin_x" value="-5.0"/>
-    <param name="global_costmap/origin_y" value="-5.0"/>
-    <param name="local_costmap/width" value="8.0"/>
-    <param name="local_costmap/height" value="8.0"/>
-    <param name="local_costmap/origin_x" value="-5.0"/>
-    <param name="local_costmap/origin_y" value="-5.0"/>
-  </node>
+<!-- Move Base for navigation -->
+<node pkg="move_base" type="move_base" name="move_base" output="screen">
+  <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+  <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+  <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
+  <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+  <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load"/>
+  <remap from="/cmd_vel" to="/mobile_base_controller/cmd_vel"/> <!-- Remap cmd_vel topic -->
+  <param name="global_costmap/width" value="8.0"/>
+  <param name="global_costmap/height" value="8.0"/>
+  <param name="global_costmap/origin_x" value="-5.0"/>
+  <param name="global_costmap/origin_y" value="-5.0"/>
+  <param name="local_costmap/width" value="8.0"/>
+  <param name="local_costmap/height" value="8.0"/>
+  <param name="local_costmap/origin_x" value="-5.0"/>
+  <param name="local_costmap/origin_y" value="-5.0"/>
+  <param name="TrajectoryPlannerROS/controller_frequency" value="30.0"/>
+</node>
 </launch>
