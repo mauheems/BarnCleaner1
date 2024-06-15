@@ -3,28 +3,28 @@ steps:
 terminal 1 mirte@mirte:
 - source in mirte_ws -> source ./devel/setup.bash
 - sudo service mirte-ros stop
-- export ROS_IP=145.94.141.169 (own ip)
+- export ROS_IP=145.94.155.246 (own ip)
 - roslaunch mirte_bringup minimal_master.launch (start master)
 
 
 terminal 2 rosbridge: 
 - source in mirte_ws -> source ./devel/setup.bash
 - source /opt/ros/noetic/setup.bash
-- export ROS_IP=145.94.190.160 (own ip)
-- export ROS_MASTER_URI=http://145.94.149.160:11311 (robot ip)
+- export ROS_IP=145.94.179.169
+- export ROS_MASTER_URI=http://145.94.155.246:11311 (robot ip)
 - roslaunch rosbridge_server rosbridge_websocket.launch
 
 terminal 3 mirte@mirte:
 - source in mirte_ws -> source ./devel/setup.bash
-- export ROS_IP=145.94.141.169 (own ip)
-- export ROS_MASTER_URI=http://145.94.149.160:11311 (mirte ip)
+- export ROS_IP=145.94.155.246 (own ip)
+- export ROS_MASTER_URI=http://145.94.155.246:11311 (mirte ip)
 - roslaunch hri_communication hri_communication.launch
 
 
 terminal 4 starting interface:
 - source /opt/ros/noetic/setup.bash
-- export ROS_IP=145.94.190.160 (own ip)
-- export ROS_MASTER_URI=http://145.94.149.160:11311 (robot ip)
+- export ROS_IP=145.94.179.169
+- export ROS_MASTER_URI=http://145.94.155.246:11311 (robot ip)
 - cd group18/interface_MDP
 - node server.js
 
