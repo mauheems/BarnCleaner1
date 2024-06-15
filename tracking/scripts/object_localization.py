@@ -46,7 +46,7 @@ class feces:
         self.rho = 0.5
 
     def update(self, abs_location):
-        '''
+        """
         Updates the feces location and state
 
         Parameters:
@@ -54,7 +54,7 @@ class feces:
 
         Returns:
             None
-        '''
+        """
 
         if abs_location == None:
             self.continuous_detection_count = 0
@@ -81,7 +81,7 @@ class feces:
 
 class object_localization:
     def __init__(self) -> None:
-        '''
+        """
         Initializes the object_localization class
 
         It subscribes to the "/camera/color/camera_info" topic to get the camera info
@@ -91,8 +91,8 @@ class object_localization:
         It synchronizes the detection results and the robot pose using ApproximateTimeSynchronizer
 
         It publishes the feces locations to the "/tracker/feces_locations" topic
-        It publishes the feces markers to the "/tracker/feces_markers" topic        
-        '''
+        It publishes the feces markers to the "/tracker/feces_markers" topic
+        """
         self.camera_height = 0.135
         self.feces_height = 0.04
         self.feces_r = 0.03
@@ -111,7 +111,7 @@ class object_localization:
         rospy.init_node("tracker", anonymous=True)
 
         # self.camera_detection_sub = rospy.Subscriber('/tracker/dummy_camera_detection', Detection, self.detection_cb)
-        
+
         self.camera_info_sub = rospy.Subscriber(
             "/camera/color/camera_info", CameraInfo, self.camera_info_cb
         )
@@ -129,7 +129,9 @@ class object_localization:
         )
 
         self.ats = message_filters.ApproximateTimeSynchronizer(
-            [self.camera_detection_ats_sub, self.amcl_pose_ats_sub], queue_size=100, slop=0.5
+            [self.camera_detection_ats_sub, self.amcl_pose_ats_sub],
+            queue_size=100,
+            slop=0.5,
         )
 
         self.ats.registerCallback(self.ats_cb)
@@ -145,16 +147,16 @@ class object_localization:
         rospy.spin()
 
     def camera_info_cb(self, camera_info_msg):
-        '''
+        """
         Callback function for the camera info subscriber
 
         It saves the camera info and calculates the camera parameters, then unregisters the subscriber
 
         Parameters:
             camera_info_msg: camera info message containing the camera parameters
-        '''
+        """
         self.camera_info = camera_info_msg
-        
+
         # camera parameters
         self.fx = self.camera_info.K[0]
         self.fy = self.camera_info.K[4]
@@ -164,14 +166,14 @@ class object_localization:
         self.camera_info_sub.unregister()
 
     def amcl_pose_cb(self, amcl_pose_msg):
-        '''
+        """
         Callback function for the amcl pose subscriber
 
         It saves the robot pose and unregisters the subscriber
 
         Parameters:
             amcl_pose_msg: robot's location message
-        '''
+        """
         self.x = amcl_pose_msg.pose.pose.position.x
         self.y = amcl_pose_msg.pose.pose.position.y
 
@@ -184,35 +186,39 @@ class object_localization:
         self.yaw = 2 * math.acos(qw)
 
         # record the time of the amcl pose
-        self.amcl_time=amcl_pose_msg.header.stamp.secs+amcl_pose_msg.header.stamp.nsecs/1000000000
+        self.amcl_time = (
+            amcl_pose_msg.header.stamp.secs
+            + amcl_pose_msg.header.stamp.nsecs / 1000000000
+        )
 
     def detection_cb(self, detection_msg):
-        '''
+        """
         Callback function for the detection subscriber
 
         It processes the detection results and updates the feces list
 
         Parameters:
             detection_msg: detection message containing the detection results
-        '''
+        """
         if (self.camera_info is None) or (self.x is None):
             return
-        
+
         if self.amcl_time == 0:
             rospy.loginfo("No amcl pose received!")
 
-        detection_time = detection_msg.header.stamp.secs+detection_msg.header.stamp.nsecs/1000000000
+        detection_time = (
+            detection_msg.header.stamp.secs
+            + detection_msg.header.stamp.nsecs / 1000000000
+        )
         now_time = rospy.Time.now().to_sec()
         rospy.loginfo(f"Delay: {self.amcl_time-detection_time}")
         # rospy.loginfo(f"Delay amcl: {now_time-self.amcl_time}")
         # rospy.loginfo(f"Delay detection: {now_time-detection_time}")
-        
+
         bboxes = detection_msg.bboxes
         # classes = np.array(detection_msg.classes)
         # detection_score = np.array(detection_msg.detection_score)
-        rospy.loginfo(
-            f"Got {len(bboxes)} detections"
-        )
+        rospy.loginfo(f"Got {len(bboxes)} detections")
 
         self.feces_absolute_locations = []
 
@@ -226,12 +232,12 @@ class object_localization:
             center_v = bbox_.center.y
             size_u = bbox_.size_x
             size_v = bbox_.size_y
-            bottom_v = center_v + size_v/2
+            bottom_v = center_v + size_v / 2
 
             if center_v + size_v / 2 < self.cy:
                 rospy.loginfo("Unreasonable detection!")
                 continue  # ignore unreasonable detection
-            
+
             # convert to camera frame
             x = (center_u - self.cx) / self.fx
             y = (center_v - self.cy) / self.fy
@@ -315,7 +321,7 @@ class object_localization:
         self.markers_pub.publish(feces_markers_msg)
 
     def update_feces_list(self, absolute_locations):
-        '''
+        """
         Updates the feces list with the new detection results
 
         Parameters:
@@ -323,7 +329,7 @@ class object_localization:
 
         Returns:
             None
-        '''
+        """
         for feces_ in self.feces_list:
             feces_.detected_this_frame = False
 
@@ -355,16 +361,17 @@ class object_localization:
                 feces_.update(None)
 
     def ats_cb(self, detection_msg, amcl_pose_msg):
-        '''
+        """
         Callback function for the ApproximateTimeSynchronizer
 
         Parameters:
             detection_msg: detection message containing the detection results
             amcl_pose_msg: robot's location message
-        '''
+        """
         rospy.loginfo("sync msg received")
         self.amcl_pose_cb(amcl_pose_msg)
         # self.detection_cb(detection_msg)
+
 
 if __name__ == "__main__":
     object_localization()

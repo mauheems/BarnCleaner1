@@ -10,13 +10,20 @@ from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Header
 from vision_msgs.msg import BoundingBox2D
 
+
 class RedObjectDetector:
     def __init__(self):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('/camera/rgb/image_raw', Image, self.image_callback, queue_size=1)
-        self.depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, self.depth_callback, queue_size=1)
-        self.bbox_pub = rospy.Publisher('/red_objects_bboxes', Detection, queue_size=1)
-        self.annotated_image_pub = rospy.Publisher('/annotated_image', Image, queue_size=1)
+        self.image_sub = rospy.Subscriber(
+            "/camera/rgb/image_raw", Image, self.image_callback, queue_size=1
+        )
+        self.depth_sub = rospy.Subscriber(
+            "/camera/depth/image_raw", Image, self.depth_callback, queue_size=1
+        )
+        self.bbox_pub = rospy.Publisher("/red_objects_bboxes", Detection, queue_size=1)
+        self.annotated_image_pub = rospy.Publisher(
+            "/annotated_image", Image, queue_size=1
+        )
         self.latest_depth_img = None
 
     def depth_callback(self, msg):
@@ -25,10 +32,10 @@ class RedObjectDetector:
     def image_callback(self, msg):
         if self.latest_depth_img is None:
             return
-        
+
         # Convert the ROS Image message to a CV2 Image
         cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        
+
         # Process the image to find red objects
         hsv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
         lower_red1 = np.array([0, 100, 100])
@@ -48,7 +55,7 @@ class RedObjectDetector:
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(annotated_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        
+
         # Publish the annotated image
         annotated_image_msg = self.bridge.cv2_to_imgmsg(annotated_image, "bgr8")
         self.annotated_image_pub.publish(annotated_image_msg)
@@ -65,7 +72,7 @@ class RedObjectDetector:
         detection_msg.header = msg.header
         detection_msg.source_img = msg
         detection_msg.depth_img = self.latest_depth_img
-        
+
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
             bbox = BoundingBox2D()
@@ -77,7 +84,8 @@ class RedObjectDetector:
         # Publish the bounding boxes
         self.bbox_pub.publish(detection_msg)
 
-if __name__ == '__main__':
-    rospy.init_node('red_object_detector')
+
+if __name__ == "__main__":
+    rospy.init_node("red_object_detector")
     detector = RedObjectDetector()
     rospy.spin()

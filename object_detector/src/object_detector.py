@@ -41,7 +41,9 @@ class CombineImages(object):
             cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             cv2_img = None
-            raise Exception(rospy.get_name(), "CVBridge error in object_detector: ", str(e))
+            raise Exception(
+                rospy.get_name(), "CVBridge error in object_detector: ", str(e)
+            )
         bboxes = self.ml_model.inference(cv2_img, msg.header.seq)
 
         detection = Detection()
