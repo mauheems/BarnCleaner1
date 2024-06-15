@@ -3,12 +3,11 @@
 This is the general README.md of our project, packages we created include their own README.md themselves as wel.
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Description of Robot](#description-of-robot)
-3. [Code Installation Steps](#code-installation-steps)
-4. [Steps to Deploy the Robot](#steps-to-deploy-the-robot)
-5. [Usage](#usage)
-6. [Contributors](#contributors)
-7. [License](#license)
+2. [Code Installation Steps](#code-installation-steps)
+3. [Steps to Deploy the Robot](#steps-to-deploy-the-robot)
+4. [Usage](#usage)
+5. [Contributors](#contributors)
+6. [License](#license)
 
 ## Introduction
 Our solution focuses on providing the farmer with a solution that is intuitive, informative, and efficient. Our solution is easily managed by a user-friendly web management platform where the farmer can easily schedule cleaning sessions, get real-time progress updates from the robots, and easily control the robots whenever required.
@@ -16,10 +15,6 @@ Our solution focuses on providing the farmer with a solution that is intuitive, 
 The robotic platform itself is programmed to operate in the environment efficiently and robustly. Efficiency gains are enabled by a Global Mission Planner that analyzes the farmer's unique barn as well as the number of robots available to determine the most efficient path for each robot to follow. These efficiency gains are furthered by the Local Mission Planner that optimally adds the detected faeces to the path. The Local Mission Planner also ensures that the robot is robust to environmental challenges. It can dynamically adapt around unreachable areas, and ensure that the robot never runs out of battery in the middle of the barn.
 
 The robot also uses state-of-the-art ML models (EfficientDet) to detect faeces and tracks them using the Exponentially Weighted Moving Average (EWMA) algorithm. This allows the robot to not only ensure that these faeces are being cleaned, but also enables the robot to plan ahead and thereby increase efficiency.
-
-## Description of Robot
-Describe the robot in detail. Include information about its design, components, sensors, and capabilities. You can also add images or diagrams of the robot.
-
 ## Code Installation Steps
 Provide step-by-step instructions to set up the development environment and install the necessary code.
 
