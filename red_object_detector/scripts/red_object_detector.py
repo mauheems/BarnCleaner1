@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-#from custom_msgs.msg import Detection
+from custom_msgs.msg import Detection
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Header
 from vision_msgs.msg import BoundingBox2D
@@ -15,7 +15,7 @@ class RedObjectDetector:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber('/camera/rgb/image_raw', Image, self.image_callback, queue_size=1)
         self.depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, self.depth_callback, queue_size=1)
-        #self.bbox_pub = rospy.Publisher('/red_objects_bboxes', Detection, queue_size=1)
+        self.bbox_pub = rospy.Publisher('/red_objects_bboxes', Detection, queue_size=1)
         self.annotated_image_pub = rospy.Publisher('/annotated_image', Image, queue_size=1)
         self.latest_depth_img = None
 
@@ -60,22 +60,22 @@ class RedObjectDetector:
         # sensor_msgs/Image source_img
         # sensor_msgs/Image depth_img
 
-        # detection_msg = Detection()
+        detection_msg = Detection()
 
-        # detection_msg.header = msg.header
-        # detection_msg.source_img = msg
-        # detection_msg.depth_img = self.latest_depth_img
+        detection_msg.header = msg.header
+        detection_msg.source_img = msg
+        detection_msg.depth_img = self.latest_depth_img
         
-        # for contour in contours:
-        #     x, y, w, h = cv2.boundingRect(contour)
-        #     bbox = BoundingBox2D()
-        #     bbox.center = Pose2D(x + w / 2, y + h / 2, 0)
-        #     bbox.size_x = w
-        #     bbox.size_y = h
-        #     detection_msg.bboxes.append(bbox)
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            bbox = BoundingBox2D()
+            bbox.center = Pose2D(x + w / 2, y + h / 2, 0)
+            bbox.size_x = w
+            bbox.size_y = h
+            detection_msg.bboxes.append(bbox)
 
-        # # Publish the bounding boxes
-        # self.bbox_pub.publish(detection_msg)
+        # Publish the bounding boxes
+        self.bbox_pub.publish(detection_msg)
 
 if __name__ == '__main__':
     rospy.init_node('red_object_detector')
