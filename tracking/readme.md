@@ -12,9 +12,10 @@ published topic
 
 ```
 /tracker/feces_locations
+/tracker/feces_markers
 ```
 
-with type `ObjectLocationArray` from `custom_msgs`
+with type `ObjectLocationArray` from `custom_msgs`, and `MarkerArray` from `visualization_msgs`
 
 ## Test with rosbag
 

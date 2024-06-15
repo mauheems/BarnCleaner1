@@ -10,6 +10,15 @@ from mediapipe.tasks.python import vision
 
 class MLModel(object):
     def __init__(self, model_path):
+        """
+        Constructor for MLModel class.
+
+        Parameters:
+            model_path (str): Path to the saved model on disk.
+
+        Returns:
+            None
+        """
         self.model_path = model_path  # path to saved model on disk
         self.detector: vision.ObjectDetector = None  # place holder for the ML model
 

@@ -33,6 +33,33 @@ def dict_to_pose(pose_dict: dict) -> Pose:
 
 class MissionPlanner:
     def __init__(self):
+        """
+        Initializes the MissionPlanner node.
+
+        This function initializes the MissionPlanner node by setting up the necessary
+        variables and services. It creates the following variables:
+        - `robot_id`: an integer representing the ID of the robot.
+        - `path_numpy`: a NumPy array representing the path of the robot.
+        - `faeces_location`: a list representing the location of feces.
+        - `robot_posn`: a variable representing the position of the robot.
+        - `status`: a variable representing the status of the robot.
+        - `current_goal_id`: an integer representing the ID of the current goal.
+        - `last_move_time`: a float representing the time of the last move.
+
+        It also sets up the following services:
+        - `path_proxy`: a service proxy for the global mission planner service.
+        - `move_base_client`: an action client for the move base service.
+
+        The function waits for the global mission planner service and the move base
+        server to be available. If the uniform distribution option is selected, it
+        resets the 2D pose using the global localization service. Otherwise, it sets
+        the location to the home position.
+
+        The function subscribes to the `/tracker/feces_locations` topic to track
+        feces locations and sets up a timer to update the goal every 0.1 seconds.
+
+        This function does not take any parameters and does not return anything.
+        """
         print("MissionPlanner node initialized")
         self.robot_id : int = None
         self.path_numpy: np.ndarray = None
@@ -78,12 +105,36 @@ class MissionPlanner:
         print("Subscribers and publishers created")
 
     def update_path(self, msg: Bool):
+        """
+        Updates the path of the robot based on the provided message.
+
+        Args:
+            msg (Bool): The message indicating whether to update the path.
+
+        Returns:
+            None
+
+        This function calls the `path_proxy` service to get the local path from the global mission planner service.
+        It then converts the pose array to a NumPy array using the `pose_array_to_path` function.
+        The `current_goal_id` is set to 0 to indicate the start of the path.
+        """
         serv_path = self.path_proxy(1).local_path
         self.path_numpy = self.pose_array_to_path(serv_path)
         self.current_goal_id = 0
         return
     
     def goal_update(self, event):
+        """
+        Updates the current goal based on the state of the move_base client.
+
+        Args:
+            event (rospy.TimerEvent): The event object representing the timer event.
+
+        Returns:
+            None
+
+        This function checks the state of the move_base client and updates the current goal accordingly. If the state is 3, it logs a message indicating that the goal has been reached and moves to the next goal. If the state is 4, it logs an error message indicating that the goal could not be reached and moves to the next goal. If the state is 1, it does nothing as the robot is already going to the goal. If the state is any other value, it logs an error message indicating the encountered state.
+        """
         state = self.move_base_client.get_state()
         if state == 3:
             rospy.loginfo("Reached goal, going to next goal")
@@ -101,6 +152,20 @@ class MissionPlanner:
 
     @staticmethod
     def pose_array_to_path(pose: PoseArray):
+        """
+        Converts a PoseArray message to a numpy array representing a path.
+
+        Args:
+            pose (PoseArray): The PoseArray message to convert.
+
+        Returns:
+            numpy.ndarray: A numpy array of shape (n, 7) representing the path.
+                Each row contains the x, y, z, qx, qy, qz, and qw components of a pose.
+
+        This function converts a PoseArray message to a numpy array representing a path.
+        It iterates over each pose in the message and extracts the x, y, and orientation components.
+        The resulting numpy array has shape (n, 7), where n is the number of poses in the message.
+        """
         n = len(pose.poses)
         pose_numpy = np.empty((n, 7), dtype=np.float64)
 
@@ -116,6 +181,25 @@ class MissionPlanner:
     
     @staticmethod
     def pose_numpy_to_goal_pose(arr):
+        """
+        Convert a numpy array to a MoveBaseGoal message representing a goal pose.
+
+        Args:
+            arr (numpy.ndarray): A numpy array of shape (7,) representing the pose.
+                The array contains the x, y, z, qx, qy, qz, and qw components of a pose.
+
+        Returns:
+            MoveBaseGoal: A MoveBaseGoal message representing the goal pose.
+                The message contains the target pose with the specified x, y, z, and orientation components.
+                The frame_id of the target pose is set to 'map'.
+                The stamp of the target pose is set to the current time.
+
+        This function converts a numpy array to a MoveBaseGoal message representing a goal pose.
+        It creates a Pose message with the specified x, y, and orientation components.
+        The resulting MoveBaseGoal message contains the target pose with the specified x, y, z, and orientation components.
+        The frame_id of the target pose is set to 'map'.
+        The stamp of the target pose is set to the current time.
+        """
         goal = MoveBaseGoal()
         pose = Pose()
         pose.position.x = arr[0]
@@ -139,6 +223,10 @@ class MissionPlanner:
         return
 
     def obj_track_callback(self, data: ObjectLocationArray):
+        """
+        This function tracks objects based on their location data provided in the ObjectLocationArray.
+        It calculates the closest object in the path, determines the insertion index, and updates the path accordingly.
+        """
         for d in data.object_location:
             d_arr = self.point_to_array(d.abs_location)
             diff = self.path_numpy[:, :3] - d_arr
